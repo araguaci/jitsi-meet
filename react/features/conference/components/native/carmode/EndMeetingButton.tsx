@@ -1,16 +1,13 @@
-/* eslint-disable lines-around-comment */
 import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
-// @ts-ignore
-import { createToolbarEvent, sendAnalytics } from '../../../../analytics';
-// @ts-ignore
-import { appNavigate } from '../../../../app/actions';
+import { createToolbarEvent } from '../../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../../analytics/functions';
+import { appNavigate } from '../../../../app/actions.native';
 import Button from '../../../../base/ui/components/native/Button';
-import { BUTTON_TYPES } from '../../../../base/ui/constants';
+import { BUTTON_TYPES } from '../../../../base/ui/constants.native';
 
 import EndMeetingIcon from './EndMeetingIcon';
-// @ts-ignore
 import styles from './styles';
 
 /**
@@ -18,7 +15,7 @@ import styles from './styles';
  *
  * @returns {JSX.Element} - The end meeting button.
  */
-const EndMeetingButton = () : JSX.Element => {
+const EndMeetingButton = (): JSX.Element => {
     const dispatch = useDispatch();
 
     const onSelect = useCallback(() => {
@@ -29,11 +26,10 @@ const EndMeetingButton = () : JSX.Element => {
 
     return (
         <Button
-            accessibilityLabel = 'carmode.actions.leaveMeeting'
-            // @ts-ignore
+            accessibilityLabel = 'toolbar.accessibilityLabel.leaveConference'
             icon = { EndMeetingIcon }
-            label = 'carmode.actions.leaveMeeting'
-            onPress = { onSelect }
+            labelKey = 'toolbar.leaveConference'
+            onClick = { onSelect }
             style = { styles.endMeetingButton }
             type = { BUTTON_TYPES.DESTRUCTIVE } />
     );

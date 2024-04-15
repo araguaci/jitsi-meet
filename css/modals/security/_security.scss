@@ -21,14 +21,14 @@
 
                 &-actions {
                     margin-top: 10px;
-                    a {
+                    button {
                         cursor: pointer;
                         text-decoration: none;
                         font-size: 14px;
                         color: #6FB1EA;
                     }
 
-                    & > :first-child:not(:last-child) {
+                    & > :not(:last-child) {
                         margin-right: 24px;
                     }
                 }

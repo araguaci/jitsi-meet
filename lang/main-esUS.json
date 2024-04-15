@@ -122,7 +122,6 @@
         "bridgeCount": "Contador del servidor: ",
         "codecs": "Codecs (A/V):",
         "connectedTo": "Conectado a:",
-        "e2e_rtt": "E2E RTT:",
         "framerate": "Fotogramas por segundo:",
         "less": "Mostrar menos",
         "localaddress": "Dirección local:",
@@ -407,7 +406,7 @@
         "veryGood": "Muy buena"
     },
     "helpView": {
-        "header": "Centro de ayuda"
+        "title": "Centro de ayuda"
     },
     "incomingCall": {
         "answer": "Contestar",
@@ -517,12 +516,11 @@
         "signedInAs": "Actualmente, la sesión está iniciada como:",
         "start": "Iniciar una transmisión en vivo",
         "streamIdHelp": "¿Qué es esto?",
+        "title": "Transmisión en vivo",
         "unavailableTitle": "Transmisión en vivo no disponible",
         "youtubeTerms": "Términos de servicios de YouTube"
     },
     "lobby": {
-        "admit": "Admitir",
-        "admitAll": "Admitir todo",
         "allow": "permitir",
         "backToKnockModeButton": "No hay contraseña, pide permiso para entrar.",
         "dialogTitle": "Sala de espera",
@@ -553,8 +551,7 @@
         "notificationTitle": "Sala de espera",
         "passwordField": "Introduce la contraseña de la reunión",
         "passwordJoinButton": "Entrar",
-        "reject": "Rechazar",
-        "rejectAll": "Rechazar todo",
+        "title": "Sala de espera",
         "toggleLabel": "Activar sala de espera"
     },
     "localRecording": {
@@ -651,6 +648,8 @@
     },
     "participantsPane": {
         "actions": {
+            "admit": "Admitir",
+            "admitAll": "Admitir todo",
             "allow": "Permitir a los asistentes:",
             "allowVideo": "Permitir vídeo",
             "askUnmute": "Pida que le quiten el silencio",
@@ -660,18 +659,19 @@
             "mute": "Silenciar",
             "muteAll": "Silenciar a todos los demás",
             "muteEveryoneElse": "Silenciar al resto",
+            "reject": "Rechazar",
             "stopEveryonesVideo": "Detener el vídeo de todos",
             "stopVideo": "Detener el vídeo",
             "unblockEveryoneMicCamera": "Desbloquear el micrófono y la cámara de todos",
             "videoModeration": "Iniciar su vídeo"
         },
         "close": "Cerrar",
-        "header": "Participantes",
         "headings": {
             "lobby": "Vestíbulo ({{count}})",
             "participantsList": "Participantes en la reunión ({{count}})",
             "waitingLobby": "Esperando en el vestíbulo ({{count}})"
-        }
+        },
+        "title": "Participantes"
     },
     "passwordDigitsOnly": "Hasta {{number}} cifras",
     "passwordSetRemotely": "definida por otro participante",
@@ -690,6 +690,9 @@
             "questionPlaceholder": "Haz una pregunta",
             "removeOption": "Eliminar la opción",
             "send": "Enviar"
+        },
+        "errors": {
+            "notUniqueOption": "Las opciones deben ser únicas"
         },
         "notification": {
             "description": "Abre la pestaña de encuestas para votar",
@@ -814,6 +817,7 @@
         "serviceName": "Servicio de grabación",
         "signIn": "Iniciar sesión",
         "signOut": "Cerrar sesión",
+        "title": "Grabando",
         "unavailable": "¡Uy! {{serviceName}} actualmente no está disponible. Estamos trabajando para resolver el problema. Vuelve a intentarlo más tarde.",
         "unavailableTitle": "Grabación no disponible",
         "uploadToCloud": "Subir a la nube"
@@ -896,6 +900,7 @@
         "minutes": "{{count}} min",
         "name": "Nombre",
         "search": "Buscar",
+        "searchHint": "Buscar participantes",
         "seconds": "{{count}} s",
         "speakerStats": "Estadísticas de participantes",
         "speakerTime": "Tiempo hablado"

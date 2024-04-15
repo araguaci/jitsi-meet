@@ -373,6 +373,7 @@
         "signedInAs": "",
         "start": "Покрeни eмитовање уживо",
         "streamIdHelp": "",
+        "title": "Емитовање уживо",
         "unavailableTitle": ""
     },
     "localRecording": {
@@ -446,6 +447,11 @@
     },
     "passwordDigitsOnly": "",
     "passwordSetRemotely": "",
+    "polls": {
+        "errors": {
+            "notUniqueOption": "Опције морају бити јединствене"
+        }
+    },
     "poweredby": "",
     "prejoin": {
         "audioAndVideoError": "Грешка звука и видеа:",
@@ -525,6 +531,7 @@
         "serviceName": "",
         "signIn": "",
         "signOut": "Покрeнитe eмитовање уживо",
+        "title": "Снимањe",
         "unavailable": "",
         "unavailableTitle": ""
     },
@@ -578,6 +585,8 @@
         "hours": "",
         "minutes": "",
         "name": "Имe",
+        "search": "Претрага",
+        "searchHint": "Учесници претраге",
         "seconds": "",
         "speakerStats": "Статистика говорника",
         "speakerTime": "Вријeмe говорника"

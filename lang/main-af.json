@@ -364,6 +364,7 @@
         "signedInAs": "U is tans aangemeld as:",
         "start": "Begin ’n regstreekse stroom",
         "streamIdHelp": "Wat’s dié?",
+        "title": "Regstreekse stroom",
         "unavailableTitle": "Regstreekse strome nie beskikbaar nie"
     },
     "localRecording": {
@@ -431,6 +432,11 @@
     },
     "passwordDigitsOnly": "",
     "passwordSetRemotely": "",
+    "polls": {
+        "errors": {
+            "notUniqueOption": "Opsies moet uniek wees"
+        }
+    },
     "poweredby": "aangedryf deur",
     "presenceStatus": {
         "busy": "Besig",
@@ -474,6 +480,7 @@
         "serviceName": "Opneemdiens",
         "signIn": "meld aan",
         "signOut": "Meld af",
+        "title": "Neem tans op",
         "unavailable": "",
         "unavailableTitle": ""
     },
@@ -527,6 +534,8 @@
         "hours": "{{count}}h",
         "minutes": "{{count}}m",
         "name": "Naam",
+        "search": "Soek",
+        "searchHint": "Soek deelnemers",
         "seconds": "{{count}}s",
         "speakerStats": "Sprekerstatistiek",
         "speakerTime": "Sprekertyd"

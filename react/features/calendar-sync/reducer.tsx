@@ -4,8 +4,8 @@ import { set } from '../base/redux/functions';
 
 import {
     CLEAR_CALENDAR_INTEGRATION,
-    SET_CALENDAR_AUTH_STATE,
     SET_CALENDAR_AUTHORIZATION,
+    SET_CALENDAR_AUTH_STATE,
     SET_CALENDAR_ERROR,
     SET_CALENDAR_EVENTS,
     SET_CALENDAR_INTEGRATION,
@@ -28,12 +28,18 @@ const DEFAULT_STATE = {
 
 export interface ICalendarSyncState {
     authorization?: string;
-    error?: Object;
-    events: Array<Object>;
+    error?: { error: string; };
+    events: Array<{
+        calendarId: string;
+        endDate: string;
+        id: string;
+        startDate: string;
+        url: string;
+    }>;
     integrationReady: boolean;
     integrationType?: string;
     isLoadingEvents?: boolean;
-    msAuthState?: Object;
+    msAuthState?: any;
     profileEmail?: string;
 }
 
@@ -58,7 +64,7 @@ PersistenceRegistry.register(STORE_NAME, {
     msAuthState: true
 });
 
-ReducerRegistry.register(STORE_NAME, (state: ICalendarSyncState = DEFAULT_STATE, action) => {
+ReducerRegistry.register<ICalendarSyncState>(STORE_NAME, (state = DEFAULT_STATE, action): ICalendarSyncState => {
     switch (action.type) {
     case CLEAR_CALENDAR_INTEGRATION:
         return DEFAULT_STATE;

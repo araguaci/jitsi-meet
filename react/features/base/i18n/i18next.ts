@@ -1,17 +1,13 @@
-// eslint-disable-next-line no-var
-declare var APP: any;
-
 import COUNTRIES_RESOURCES from 'i18n-iso-countries/langs/en.json';
 import i18next from 'i18next';
-import I18nextXHRBackend from 'i18next-xhr-backend';
+import I18nextXHRBackend, { HttpBackendOptions } from 'i18next-http-backend';
 import _ from 'lodash';
 
 import LANGUAGES_RESOURCES from '../../../../lang/languages.json';
 import MAIN_RESOURCES from '../../../../lang/main.json';
+import TRANSLATION_LANGUAGES_RESOURCES from '../../../../lang/translation-languages.json';
 
 import { I18NEXT_INITIALIZED, LANGUAGE_CHANGED } from './actionTypes';
-// eslint-disable-next-line lines-around-comment
-// @ts-ignore
 import languageDetector from './languageDetector';
 
 /**
@@ -37,6 +33,14 @@ const COUNTRIES = _.merge({}, COUNTRIES_RESOURCES, COUNTRIES_RESOURCES_OVERRIDES
 export const LANGUAGES: Array<string> = Object.keys(LANGUAGES_RESOURCES);
 
 /**
+ * The available/supported translation languages.
+ *
+ * @public
+ * @type {Array<string>}
+ */
+export const TRANSLATION_LANGUAGES: Array<string> = Object.keys(TRANSLATION_LANGUAGES_RESOURCES);
+
+/**
  * The default language.
  *
  * English is the default language.
@@ -47,13 +51,29 @@ export const LANGUAGES: Array<string> = Object.keys(LANGUAGES_RESOURCES);
 export const DEFAULT_LANGUAGE = 'en';
 
 /**
+ * The available/supported translation languages head. (Languages displayed on the top ).
+ *
+ * @public
+ * @type {Array<string>}
+ */
+export const TRANSLATION_LANGUAGES_HEAD: Array<string> = [ DEFAULT_LANGUAGE ];
+
+/**
  * The options to initialize i18next with.
  *
- * @type {Object}
+ * @type {i18next.InitOptions}
  */
-const options = {
-    backend: {
-        loadPath: 'lang/{{ns}}-{{lng}}.json'
+const options: i18next.InitOptions = {
+    backend: <HttpBackendOptions>{
+        loadPath: (lng: string[], ns: string[]) => {
+            switch (ns[0]) {
+            case 'countries':
+            case 'main':
+                return 'lang/{{ns}}-{{lng}}.json';
+            default:
+                return 'lang/{{ns}}.json';
+            }
+        }
     },
     defaultNS: 'main',
     fallbackLng: DEFAULT_LANGUAGE,
@@ -61,9 +81,10 @@ const options = {
         escapeValue: false // not needed for react as it escapes by default
     },
     load: 'languageOnly',
-    ns: [ 'main', 'languages', 'countries' ],
+    ns: [ 'main', 'languages', 'countries', 'translation-languages' ],
     react: {
         // re-render when a new resource bundle is added
+        // @ts-expect-error. Fixed in i18next 19.6.1.
         bindI18nStore: 'added',
         useSuspense: false
     },
@@ -77,7 +98,7 @@ const options = {
 
 i18next
     .use(navigator.product === 'ReactNative' ? {} : I18nextXHRBackend)
-    .use(languageDetector) // @ts-ignore
+    .use(languageDetector)
     .init(options);
 
 // Add default language which is preloaded from the source code.
@@ -91,6 +112,12 @@ i18next.addResourceBundle(
     DEFAULT_LANGUAGE,
     'languages',
     LANGUAGES_RESOURCES,
+    /* deep */ true,
+    /* overwrite */ true);
+i18next.addResourceBundle(
+    DEFAULT_LANGUAGE,
+    'translation-languages',
+    TRANSLATION_LANGUAGES_RESOURCES,
     /* deep */ true,
     /* overwrite */ true);
 i18next.addResourceBundle(

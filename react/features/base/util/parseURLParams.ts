@@ -1,5 +1,5 @@
 // @ts-ignore
-import Bourne from '@hapi/bourne';
+import { safeJsonParse } from '@jitsi/js-utils/json';
 
 import { reportError } from './helpers';
 
@@ -24,14 +24,18 @@ const blacklist = [ '__proto__', 'constructor', 'prototype' ];
 export function parseURLParams(
         url: URL | string,
         dontParse = false,
-        source = 'hash'): Object {
+        source = 'hash') {
+    if (!url) {
+        return {};
+    }
+
     if (typeof url === 'string') {
         // eslint-disable-next-line no-param-reassign
         url = new URL(url);
     }
     const paramStr = source === 'search' ? url.search : url.hash;
     const params: any = {};
-    const paramParts = (paramStr && paramStr.substr(1).split('&')) || [];
+    const paramParts = paramStr?.substr(1).split('&') || [];
 
     // Detect and ignore hash params for hash routers.
     if (source === 'hash' && paramParts.length === 1) {
@@ -42,11 +46,11 @@ export function parseURLParams(
         }
     }
 
-    paramParts.forEach(part => {
+    paramParts.forEach((part: string) => {
         const param = part.split('=');
         const key = param[0];
 
-        if (!key || key.split('.').some(k => blacklist.includes(k))) {
+        if (!key || key.split('.').some((k: string) => blacklist.includes(k))) {
             return;
         }
 
@@ -56,9 +60,12 @@ export function parseURLParams(
             value = param[1];
 
             if (!dontParse) {
-                const decoded = decodeURIComponent(value).replace(/\\&/, '&');
+                const decoded = decodeURIComponent(value).replace(/\\&/, '&')
+                    .replace(/[\u2018\u2019]/g, '\'')
+                    .replace(/[\u201C\u201D]/g, '"');
 
-                value = decoded === 'undefined' ? undefined : Bourne.parse(decoded);
+                value = decoded === 'undefined' ? undefined : safeJsonParse(decoded);
+
             }
         } catch (e: any) {
             reportError(

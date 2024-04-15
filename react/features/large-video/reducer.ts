@@ -3,19 +3,20 @@ import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     SELECT_LARGE_VIDEO_PARTICIPANT,
-    UPDATE_KNOWN_LARGE_VIDEO_RESOLUTION,
-    UPDATE_LAST_LARGE_VIDEO_MEDIA_EVENT,
-    SET_SEE_WHAT_IS_BEING_SHARED
+    SET_LARGE_VIDEO_DIMENSIONS,
+    SET_SEE_WHAT_IS_BEING_SHARED,
+    UPDATE_KNOWN_LARGE_VIDEO_RESOLUTION
 } from './actionTypes';
 
 export interface ILargeVideoState {
-    lastMediaEvent?: string;
+    height?: number;
     participantId?: string;
     resolution?: number;
     seeWhatIsBeingShared?: boolean;
+    width?: number;
 }
 
-ReducerRegistry.register('features/large-video', (state: ILargeVideoState = {}, action) => {
+ReducerRegistry.register<ILargeVideoState>('features/large-video', (state = {}, action): ILargeVideoState => {
     switch (action.type) {
 
     // When conference is joined, we update ID of local participant from default
@@ -38,16 +39,17 @@ ReducerRegistry.register('features/large-video', (state: ILargeVideoState = {}, 
             participantId: action.participantId
         };
 
+    case SET_LARGE_VIDEO_DIMENSIONS:
+        return {
+            ...state,
+            height: action.height,
+            width: action.width
+        };
+
     case UPDATE_KNOWN_LARGE_VIDEO_RESOLUTION:
         return {
             ...state,
             resolution: action.resolution
-        };
-
-    case UPDATE_LAST_LARGE_VIDEO_MEDIA_EVENT:
-        return {
-            ...state,
-            lastMediaEvent: action.name
         };
 
     case SET_SEE_WHAT_IS_BEING_SHARED:

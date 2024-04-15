@@ -359,6 +359,7 @@
         "signedInAs": "",
         "start": "Կանգնացնել ուղիղ հեռարձակումը:",
         "streamIdHelp": "",
+        "title": "Ուղիղ Հեռարձակում",
         "unavailableTitle": ""
     },
     "localRecording": {
@@ -426,6 +427,11 @@
     },
     "passwordDigitsOnly": "",
     "passwordSetRemotely": "Սահմանվել է մեկ այլ մասնակցի կողմից",
+    "polls": {
+        "errors": {
+            "notUniqueOption": "Ընտրանքները պետք է լինեն եզակի"
+        }
+    },
     "poweredby": "Հիմնված է",
     "presenceStatus": {
         "busy": "",
@@ -469,6 +475,7 @@
         "serviceName": "",
         "signIn": "",
         "signOut": "",
+        "title": "Գրանցում",
         "unavailable": "",
         "unavailableTitle": ""
     },
@@ -522,6 +529,8 @@
         "hours": "",
         "minutes": "",
         "name": "Անուն",
+        "search": "Որոնում",
+        "searchHint": "Որոնել մասնակիցներին",
         "seconds": "",
         "speakerStats": "Հռետորի վիճակագրությունը",
         "speakerTime": ""

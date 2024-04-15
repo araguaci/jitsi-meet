@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { connect as reduxConnect } from 'react-redux';
 
-import { IState, IStore } from '../../app/types';
+import { IReduxState, IStore } from '../../app/types';
+import { IStateful } from '../app/types';
 
 /**
  * Sets specific properties of a specific state to specific values and prevents
@@ -16,7 +16,7 @@ import { IState, IStore } from '../../app/types';
  * from the specified target by setting the specified properties to the
  * specified values.
  */
-export function assign<T extends Object>(target: T, source: T): T {
+export function assign<T extends Object>(target: T, source: Partial<T>): T {
     let t = target;
 
     for (const property in source) { // eslint-disable-line guard-for-in
@@ -24,19 +24,6 @@ export function assign<T extends Object>(target: T, source: T): T {
     }
 
     return t;
-}
-
-/**
- * Wrapper function for the react-redux connect function to avoid having to
- * declare function types for flow, but still let flow warn for other errors.
- *
- * @param {any} mapStateToProps - Redux mapStateToProps function.
- * @param {Function?} mapDispatchToProps - Redux mapDispatchToProps function.
- * @returns {Connector}
- */
-export function connect(
-        mapStateToProps?: any, mapDispatchToProps?: Function) {
-    return reduxConnect(mapStateToProps, mapDispatchToProps);
 }
 
 /**
@@ -71,8 +58,6 @@ export function equals(a: any, b: any) {
 export function set<T extends Object>(state: T, property: keyof T, value: any): T {
     return _set(state, property, value, /* copyOnWrite */ true);
 }
-
-/* eslint-disable max-params */
 
 /**
  * Sets a specific property of a specific state to a specific value. Prevents
@@ -126,6 +111,16 @@ function _set<T extends Object>(
 /* eslint-enable max-params */
 
 /**
+ * Whether or not the entity is of type IStore.
+ *
+ * @param {IStateful} stateful - The entity to check.
+ * @returns {boolean}
+ */
+function isStore(stateful: IStateful): stateful is IStore {
+    return 'getState' in stateful && typeof stateful.getState === 'function';
+}
+
+/**
  * Returns redux state from the specified {@code stateful} which is presumed to
  * be related to the redux state (e.g. The redux store, the redux
  * {@code getState} function).
@@ -135,17 +130,14 @@ function _set<T extends Object>(
  * returned.
  * @returns {Object} The redux state.
  */
-export function toState(stateful: Function | IStore | IState) {
+export function toState(stateful: IStateful): IReduxState {
     if (stateful) {
         if (typeof stateful === 'function') {
             return stateful();
         }
 
-        // @ts-ignore
-        const { getState } = stateful;
-
-        if (typeof getState === 'function') {
-            return getState();
+        if (isStore(stateful)) {
+            return stateful.getState();
         }
     }
 

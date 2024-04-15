@@ -26,7 +26,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.facebook.react.ReactRootView;
-import com.rnimmersive.RNImmersiveModule;
 
 import org.jitsi.meet.sdk.log.JitsiMeetLogger;
 
@@ -81,6 +80,8 @@ public class JitsiMeetView extends FrameLayout {
                 result.putBoolean(key, (Boolean)bValue);
             } else if (valueType.contentEquals("String")) {
                 result.putString(key, (String)bValue);
+            } else if (valueType.contentEquals("Integer")) {
+                result.putInt(key, (int)bValue);
             } else if (valueType.contentEquals("Bundle")) {
                 result.putBundle(key, mergeProps((Bundle)aValue, (Bundle)bValue));
             } else {
@@ -156,6 +157,14 @@ public class JitsiMeetView extends FrameLayout {
     }
 
     /**
+     * Internal method which aborts running RN by passing empty props.
+     * This is only meant to be used from the enclosing Activity's onDestroy.
+     */
+    public void abort() {
+        setProps(new Bundle());
+    }
+
+    /**
      * Creates the {@code ReactRootView} for the given app name with the given
      * props. Once created it's set as the view of this {@code FrameLayout}.
      *
@@ -206,7 +215,7 @@ public class JitsiMeetView extends FrameLayout {
         // by leaving the conference. However, React and, respectively,
         // appProperties/initialProperties are declarative expressions i.e. one
         // and the same URL will not trigger an automatic re-render in the
-        // JavaScript source code. The workaround implemented bellow introduces
+        // JavaScript source code. The workaround implemented below introduces
         // "imperativeness" in React Component props by defining a unique value
         // per setProps() invocation.
         props.putLong("timestamp", System.currentTimeMillis());
@@ -218,23 +227,5 @@ public class JitsiMeetView extends FrameLayout {
     protected void onDetachedFromWindow() {
         dispose();
         super.onDetachedFromWindow();
-    }
-
-    /**
-     * Called when the window containing this view gains or loses focus.
-     *
-     * @param hasFocus If the window of this view now has focus, {@code true};
-     * otherwise, {@code false}.
-     */
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-
-        // https://github.com/mockingbot/react-native-immersive#restore-immersive-state
-        RNImmersiveModule immersive = RNImmersiveModule.getInstance();
-
-        if (hasFocus && immersive != null) {
-            immersive.emitImmersiveStateChangeEvent();
-        }
     }
 }

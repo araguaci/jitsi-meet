@@ -1,11 +1,18 @@
-import { BUTTON_TYPES } from '../constants';
+import { GestureResponderEvent } from 'react-native';
 
-export interface ButtonProps {
+import { BUTTON_TYPES } from '../constants.any';
+
+export interface IButtonProps {
 
     /**
      * Label used for accessibility.
      */
-    accessibilityLabel: string;
+    accessibilityLabel?: string;
+
+    /**
+     * Whether or not the button should automatically focus.
+     */
+    autoFocus?: boolean;
 
     /**
      * Whether or not the button is disabled.
@@ -18,9 +25,19 @@ export interface ButtonProps {
     icon?: Function;
 
     /**
-     * The text to be displayed on the button.
+     * The translation key of the text to be displayed on the button.
      */
-    label?: string;
+    labelKey?: string;
+
+    /**
+     * Click callback.
+     */
+    onClick?: (e?: React.MouseEvent<HTMLButtonElement> | GestureResponderEvent) => void;
+
+    /**
+     * Key press callback.
+     */
+    onKeyPress?: (e?: React.KeyboardEvent<HTMLButtonElement>) => void;
 
     /**
      * The type of button to be displayed.
@@ -28,7 +45,7 @@ export interface ButtonProps {
     type?: BUTTON_TYPES;
 }
 
-export interface InputProps {
+export interface IInputProps {
 
     /**
      * Whether the input is be clearable. (show clear button).
@@ -58,7 +75,7 @@ export interface InputProps {
     /**
      * Change callback.
      */
-    onChange: (value: string) => void;
+    onChange?: (value: string) => void;
 
     /**
      * The input placeholder text.
@@ -70,3 +87,29 @@ export interface InputProps {
      */
     value: string | number;
 }
+
+export interface ISwitchProps {
+
+    /**
+     * Whether or not the toggle is on.
+     */
+    checked: boolean;
+
+    /**
+     * Whether or not the toggle is disabled.
+     */
+    disabled?: boolean;
+
+    /**
+     * Toggle change callback.
+     */
+    onChange: (on?: boolean) => void;
+}
+
+export type MultiSelectItem = {
+    content: string;
+    description?: string;
+    elemBefore?: Element;
+    isDisabled?: boolean;
+    value: string;
+};

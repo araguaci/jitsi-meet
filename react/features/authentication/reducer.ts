@@ -1,8 +1,10 @@
+import PersistenceRegistry from '../base/redux/PersistenceRegistry';
 import ReducerRegistry from '../base/redux/ReducerRegistry';
 import { assign } from '../base/redux/functions';
 
 import {
     CANCEL_LOGIN,
+    SET_TOKEN_AUTH_URL_SUCCESS,
     STOP_WAIT_FOR_OWNER,
     UPGRADE_ROLE_FINISHED,
     UPGRADE_ROLE_STARTED,
@@ -10,11 +12,21 @@ import {
 } from './actionTypes';
 
 export interface IAuthenticationState {
-    error?: Object|undefined;
-    progress?: number|undefined;
-    thenableWithCancel?: Object|undefined;
+    error?: Object | undefined;
+    progress?: number | undefined;
+    thenableWithCancel?: {
+        cancel: Function;
+    };
+    tokenAuthUrlSuccessful?: boolean;
     waitForOwnerTimeoutID?: number;
 }
+
+/**
+ * Sets up the persistence of the feature {@code authentication}.
+ */
+PersistenceRegistry.register('features/authentication', {
+    tokenAuthUrlSuccessful: true
+});
 
 /**
  * Listens for actions which change the state of the authentication feature.
@@ -24,13 +36,18 @@ export interface IAuthenticationState {
  * @param {string} action.type - Type of action.
  * @returns {Object}
  */
-ReducerRegistry.register('features/authentication', (state: IAuthenticationState = {}, action: any) => {
+ReducerRegistry.register<IAuthenticationState>('features/authentication',
+(state = {}, action): IAuthenticationState => {
     switch (action.type) {
     case CANCEL_LOGIN:
         return assign(state, {
             error: undefined,
             progress: undefined,
             thenableWithCancel: undefined
+        });
+    case SET_TOKEN_AUTH_URL_SUCCESS:
+        return assign(state, {
+            tokenAuthUrlSuccessful: action.value
         });
 
     case STOP_WAIT_FOR_OWNER:

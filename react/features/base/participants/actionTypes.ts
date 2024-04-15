@@ -1,5 +1,3 @@
-// @flow
-
 /**
  * Create an action for when dominant speaker changes.
  *
@@ -8,7 +6,8 @@
  *     participant: {
  *         conference: JitsiConference,
  *         id: string,
- *         previousSpeakers: Array<string>
+ *         previousSpeakers: Array<string>,
+ *         silence: boolean
  *     }
  * }
  */
@@ -117,6 +116,18 @@ export const PARTICIPANT_KICKED = 'PARTICIPANT_KICKED';
 export const PARTICIPANT_LEFT = 'PARTICIPANT_LEFT';
 
 /**
+ * Action to handle case when the sources attached to a participant are updated.
+ *
+ * {
+ *      type: PARTICIPANT_SOURCES_UPDATED,
+ *      participant: {
+ *          id: string
+ *      }
+ * }
+ */
+export const PARTICIPANT_SOURCES_UPDATED = 'PARTICIPANT_SOURCES_UPDATED';
+
+/**
  * Action to handle case when info about participant changes.
  *
  * {
@@ -191,6 +202,14 @@ export const SET_LOADABLE_AVATAR_URL = 'SET_LOADABLE_AVATAR_URL';
  * }
  */
 export const LOCAL_PARTICIPANT_RAISE_HAND = 'LOCAL_PARTICIPANT_RAISE_HAND';
+
+/**
+ * Clear the raise hand queue.
+ * {
+ *     type: RAISE_HAND_CLEAR
+ * }
+ */
+export const RAISE_HAND_CLEAR = 'RAISE_HAND_CLEAR';
 
 /**
  * Updates participant in raise hand queue.

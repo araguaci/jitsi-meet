@@ -57,6 +57,7 @@
         },
         "noMessagesMessage": "У канферэнцыі пакуль няма ніякіх паведамленняў. Пачніце размову!",
         "privateNotice": "Асабістае паведамленне карыстальнiку {{recipient}}",
+        "sendButton": "Даслаць",
         "title": "Чат",
         "titleWithPolls": "Чат",
         "you": "Вы"
@@ -90,7 +91,6 @@
         "bitrate": "Бітрэйт:",
         "bridgeCount": "Колькасць сервераў: ",
         "connectedTo": "Падключаны да:",
-        "e2e_rtt": "E2E RTT:",
         "framerate": "Частата кадраў:",
         "less": "Кароткая інфармацыя",
         "localaddress_0": "Мясцовы адрас:",
@@ -306,7 +306,7 @@
         "veryGood": "Вельмі добра"
     },
     "helpView": {
-        "header": "Цэнтар дапамогi"
+        "title": "Цэнтар дапамогi"
     },
     "incomingCall": {
         "answer": "Адказ",
@@ -405,6 +405,7 @@
         "signedInAs": "У цяперашні час вы ўвайшлі ў сістэму як:",
         "start": "Пачаць трансляцыю",
         "streamIdHelp": "Што гэта?",
+        "title": "Трансляцыя",
         "unavailableTitle": "Трансляцыя недаступная",
         "youtubeTerms": "YouTube ўмовы паслуг"
     },
@@ -477,6 +478,11 @@
     },
     "passwordDigitsOnly": "Да {{number}} лічбаў",
     "passwordSetRemotely": "устаноўлены іншым удзельнікам",
+    "polls": {
+        "errors": {
+            "notUniqueOption": "Варыянты павінны быць унікальнымі"
+        }
+    },
     "poweredby": "працуе на",
     "presenceStatus": {
         "busy": "Заняты",
@@ -523,6 +529,7 @@
         "serviceName": "Служба запісу",
         "signIn": "Уваход",
         "signOut": "Выхад",
+        "title": "Запіс",
         "unavailable": "Служба {{serviceName}} зараз недаступная. Мы працуем над выпраўленнем гэтай памылкі. Калі ласка, паспрабуйце пазней.",
         "unavailableTitle": "Запіс немагчымы"
     },
@@ -582,6 +589,8 @@
         "hours": "{{count}}г",
         "minutes": "{{count}}хв",
         "name": "Імя",
+        "search": "Пошук",
+        "searchHint": "Пошук удзельнікаў",
         "seconds": "{{count}} с",
         "speakerStats": "Статыстыка выступаў",
         "speakerTime": "Час выступленняў"

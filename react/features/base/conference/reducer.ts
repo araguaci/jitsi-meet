@@ -1,15 +1,12 @@
-/* eslint-disable import/order */
-// @ts-ignore
-import { LOCKED_LOCALLY, LOCKED_REMOTELY } from '../../room-lock';
+import { AnyAction } from 'redux';
 
-// @ts-ignore
-import { CONNECTION_WILL_CONNECT, SET_LOCATION_URL } from '../connection';
-
-// @ts-ignore
+import { FaceLandmarks } from '../../face-landmarks/types';
+import { LOCKED_LOCALLY, LOCKED_REMOTELY } from '../../room-lock/constants';
+import { ISpeakerStats } from '../../speaker-stats/reducer';
+import { CONNECTION_WILL_CONNECT, SET_LOCATION_URL } from '../connection/actionTypes';
 import { JitsiConferenceErrors } from '../lib-jitsi-meet';
-
-import { assign, set } from '../redux/functions';
 import ReducerRegistry from '../redux/ReducerRegistry';
+import { assign, set } from '../redux/functions';
 
 import {
     AUTH_STATUS_CHANGED,
@@ -23,57 +20,176 @@ import {
     CONFERENCE_WILL_LEAVE,
     LOCK_STATE_CHANGED,
     P2P_STATUS_CHANGED,
+    SET_ASSUMED_BANDWIDTH_BPS,
     SET_FOLLOW_ME,
     SET_OBFUSCATED_ROOM,
     SET_PASSWORD,
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
     SET_START_MUTED_POLICY,
-    SET_START_REACTIONS_MUTED
+    SET_START_REACTIONS_MUTED,
+    UPDATE_CONFERENCE_METADATA
 } from './actionTypes';
-
-// @ts-ignore
 import { isRoomValid } from './functions';
 
 const DEFAULT_STATE = {
+    assumedBandwidthBps: undefined,
     conference: undefined,
     e2eeSupported: undefined,
     joining: undefined,
     leaving: undefined,
     locked: undefined,
     membersOnly: undefined,
+    metadata: undefined,
     password: undefined,
     passwordRequired: undefined
 };
 
+export interface IConferenceMetadata {
+    recording?: {
+        isTranscribingEnabled: boolean;
+    };
+    whiteboard?: {
+        collabDetails: {
+            roomId: string;
+            roomKey: string;
+        };
+    };
+}
+
+export interface IJitsiConference {
+    addCommandListener: Function;
+    addLobbyMessageListener: Function;
+    addTrack: Function;
+    authenticateAndUpgradeRole: Function;
+    avModerationApprove: Function;
+    avModerationReject: Function;
+    callUUID?: string;
+    createVideoSIPGWSession: Function;
+    dial: Function;
+    disableAVModeration: Function;
+    disableLobby: Function;
+    enableAVModeration: Function;
+    enableLobby: Function;
+    end: Function;
+    getBreakoutRooms: Function;
+    getConnection: Function;
+    getLocalParticipantProperty: Function;
+    getLocalTracks: Function;
+    getMeetingUniqueId: Function;
+    getMetadataHandler: Function;
+    getName: Function;
+    getParticipantById: Function;
+    getParticipantCount: Function;
+    getParticipants: Function;
+    getRole: Function;
+    getSpeakerStats: () => ISpeakerStats;
+    getSsrcByTrack: Function;
+    grantOwner: Function;
+    isAVModerationSupported: Function;
+    isE2EEEnabled: Function;
+    isE2EESupported: Function;
+    isEndConferenceSupported: Function;
+    isLobbySupported: Function;
+    isP2PActive: Function;
+    isSIPCallingSupported: Function;
+    isStartAudioMuted: Function;
+    isStartVideoMuted: Function;
+    join: Function;
+    joinLobby: Function;
+    kickParticipant: Function;
+    leave: Function;
+    lobbyApproveAccess: Function;
+    lobbyDenyAccess: Function;
+    lock: Function;
+    markParticipantVerified: Function;
+    muteParticipant: Function;
+    myLobbyUserId: Function;
+    myUserId: Function;
+    off: Function;
+    on: Function;
+    options: any;
+    removeTrack: Function;
+    replaceTrack: Function;
+    room: IJitsiConferenceRoom;
+    sendApplicationLog: Function;
+    sendCommand: Function;
+    sendCommandOnce: Function;
+    sendEndpointMessage: Function;
+    sendFaceLandmarks: (faceLandmarks: FaceLandmarks) => void;
+    sendFeedback: Function;
+    sendLobbyMessage: Function;
+    sendMessage: Function;
+    sendPrivateTextMessage: Function;
+    sendTextMessage: Function;
+    sendTones: Function;
+    sessionId: string;
+    setAssumedBandwidthBps: (value: number) => void;
+    setDesktopSharingFrameRate: Function;
+    setDisplayName: Function;
+    setLocalParticipantProperty: Function;
+    setMediaEncryptionKey: Function;
+    setReceiverConstraints: Function;
+    setSenderVideoConstraint: Function;
+    setStartMutedPolicy: Function;
+    setSubject: Function;
+    startRecording: Function;
+    startVerification: Function;
+    stopRecording: Function;
+    toggleE2EE: Function;
+}
+
 export interface IConferenceState {
-    authEnabled?: boolean|undefined;
-    authLogin?: string|undefined;
-    authRequired?: Object;
-    conference: any|undefined;
+    assumedBandwidthBps?: number;
+    authEnabled?: boolean;
+    authLogin?: string;
+    authRequired?: IJitsiConference;
+    conference?: IJitsiConference;
     conferenceTimestamp?: number;
-    e2eeSupported: boolean|undefined;
+    e2eeSupported?: boolean;
+    error?: Error;
     followMeEnabled?: boolean;
-    joining: Object|undefined;
-    leaving: Object|undefined;
+    joining?: IJitsiConference;
+    leaving?: IJitsiConference;
+    lobbyWaitingForHost?: boolean;
     localSubject?: string;
-    locked: string|undefined;
-    membersOnly: boolean|undefined;
-    password: string|undefined;
-    passwordRequired: boolean|undefined;
+    locked?: string;
+    membersOnly?: IJitsiConference;
+    metadata?: IConferenceMetadata;
+    obfuscatedRoom?: string;
+    obfuscatedRoomSource?: string;
+    p2p?: Object;
+    password?: string;
+    passwordRequired?: IJitsiConference;
     pendingSubjectChange?: string;
-    room?: Object;
+    room?: string;
+    startAudioMutedPolicy?: boolean;
     startReactionsMuted?: boolean;
+    startVideoMutedPolicy?: boolean;
     subject?: string;
+}
+
+export interface IJitsiConferenceRoom {
+    locked: boolean;
+    myroomjid: string;
+    roomjid: string;
+    xmpp: {
+        moderator: {
+            logout: Function;
+        };
+    };
+}
+
+interface IConferenceFailedError extends Error {
+    params: Array<any>;
 }
 
 /**
  * Listen for actions that contain the conference object, so that it can be
  * stored for use by other action creators.
  */
-ReducerRegistry.register(
-    'features/base/conference',
-    (state: IConferenceState = DEFAULT_STATE, action: any) => {
+ReducerRegistry.register<IConferenceState>('features/base/conference',
+    (state = DEFAULT_STATE, action): IConferenceState => {
         switch (action.type) {
         case AUTH_STATUS_CHANGED:
             return _authStatusChanged(state, action);
@@ -109,6 +225,13 @@ ReducerRegistry.register(
         case P2P_STATUS_CHANGED:
             return _p2pStatusChanged(state, action);
 
+        case SET_ASSUMED_BANDWIDTH_BPS: {
+            const assumedBandwidthBps = action.assumedBandwidthBps >= 0
+                ? Number(action.assumedBandwidthBps)
+                : undefined;
+
+            return set(state, 'assumedBandwidthBps', assumedBandwidthBps);
+        }
         case SET_FOLLOW_ME:
             return set(state, 'followMeEnabled', action.enabled);
 
@@ -139,6 +262,12 @@ ReducerRegistry.register(
                 startAudioMutedPolicy: action.startAudioMutedPolicy,
                 startVideoMutedPolicy: action.startVideoMutedPolicy
             };
+
+        case UPDATE_CONFERENCE_METADATA:
+            return {
+                ...state,
+                metadata: action.metadata
+            };
         }
 
         return state;
@@ -154,7 +283,8 @@ ReducerRegistry.register(
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _authStatusChanged(state: any, { authEnabled, authLogin }: {authEnabled: boolean, authLogin: string}) {
+function _authStatusChanged(state: IConferenceState,
+        { authEnabled, authLogin }: { authEnabled: boolean; authLogin: string; }) {
     return assign(state, {
         authEnabled,
         authLogin
@@ -171,7 +301,8 @@ function _authStatusChanged(state: any, { authEnabled, authLogin }: {authEnabled
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _conferenceFailed(state: any, { conference, error }: {conference: Object, error: any}) {
+function _conferenceFailed(state: IConferenceState, { conference, error }: {
+    conference: IJitsiConference; error: IConferenceFailedError; }) {
     // The current (similar to getCurrentConference in
     // base/conference/functions.any.js) conference which is joining or joined:
     const conference_ = state.conference || state.joining;
@@ -183,6 +314,7 @@ function _conferenceFailed(state: any, { conference, error }: {conference: Objec
     let authRequired;
     let membersOnly;
     let passwordRequired;
+    let lobbyWaitingForHost;
 
     switch (error.name) {
     case JitsiConferenceErrors.AUTHENTICATION_REQUIRED:
@@ -190,9 +322,16 @@ function _conferenceFailed(state: any, { conference, error }: {conference: Objec
         break;
 
     case JitsiConferenceErrors.CONFERENCE_ACCESS_DENIED:
-    case JitsiConferenceErrors.MEMBERS_ONLY_ERROR:
+    case JitsiConferenceErrors.MEMBERS_ONLY_ERROR: {
         membersOnly = conference;
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const [ _lobbyJid, _lobbyWaitingForHost ] = error.params;
+
+        lobbyWaitingForHost = _lobbyWaitingForHost;
+
         break;
+    }
 
     case JitsiConferenceErrors.PASSWORD_REQUIRED:
         passwordRequired = conference;
@@ -206,6 +345,7 @@ function _conferenceFailed(state: any, { conference, error }: {conference: Objec
         error,
         joining: undefined,
         leaving: undefined,
+        lobbyWaitingForHost,
 
         /**
          * The indicator of how the conference/room is locked. If falsy, the
@@ -237,13 +377,13 @@ function _conferenceFailed(state: any, { conference, error }: {conference: Objec
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _conferenceJoined(state: any, { conference }: {conference: any}) {
+function _conferenceJoined(state: IConferenceState, { conference }: { conference: IJitsiConference; }) {
     // FIXME The indicator which determines whether a JitsiConference is locked
     // i.e. password-protected is private to lib-jitsi-meet. However, the
     // library does not fire LOCK_STATE_CHANGED upon joining a JitsiConference
     // with a password.
     // FIXME Technically JitsiConference.room is a private field.
-    const locked = conference.room && conference.room.locked ? LOCKED_REMOTELY : undefined;
+    const locked = conference.room?.locked ? LOCKED_REMOTELY : undefined;
 
     return assign(state, {
         authRequired: undefined,
@@ -261,6 +401,8 @@ function _conferenceJoined(state: any, { conference }: {conference: any}) {
         joining: undefined,
         membersOnly: undefined,
         leaving: undefined,
+
+        lobbyWaitingForHost: undefined,
 
         /**
          * The indicator which determines whether the conference is locked.
@@ -283,7 +425,8 @@ function _conferenceJoined(state: any, { conference }: {conference: any}) {
  * @returns {Object} The next/new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _conferenceLeftOrWillLeave(state: any, { conference, type }: {conference: Object, type: string}) {
+function _conferenceLeftOrWillLeave(state: IConferenceState, { conference, type }:
+    { conference: IJitsiConference; type: string; }) {
     const nextState = { ...state };
 
     // The redux action CONFERENCE_LEFT is the last time that we should be
@@ -295,8 +438,8 @@ function _conferenceLeftOrWillLeave(state: any, { conference, type }: {conferenc
     // due clean-up like leaving the associated room, but the instance is no
     // longer the focus of the attention of the user and, consequently, the app.
     for (const p in state) {
-        if (state[p] === conference) {
-            nextState[p] = undefined;
+        if (state[p as keyof IConferenceState] === conference) {
+            nextState[p as keyof IConferenceState] = undefined;
 
             switch (p) {
             case 'conference':
@@ -337,7 +480,7 @@ function _conferenceLeftOrWillLeave(state: any, { conference, type }: {conferenc
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _conferenceWillJoin(state: any, { conference }: {conference: Object}) {
+function _conferenceWillJoin(state: IConferenceState, { conference }: { conference: IJitsiConference; }) {
     return assign(state, {
         error: undefined,
         joining: conference
@@ -354,7 +497,7 @@ function _conferenceWillJoin(state: any, { conference }: {conference: Object}) {
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _lockStateChanged(state: any, { conference, locked }: {conference: Object, locked: boolean}) {
+function _lockStateChanged(state: IConferenceState, { conference, locked }: { conference: Object; locked: boolean; }) {
     if (state.conference !== conference) {
         return state;
     }
@@ -375,7 +518,7 @@ function _lockStateChanged(state: any, { conference, locked }: {conference: Obje
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _p2pStatusChanged(state: any, action: any) {
+function _p2pStatusChanged(state: IConferenceState, action: AnyAction) {
     return set(state, 'p2p', action.p2p);
 }
 
@@ -388,8 +531,8 @@ function _p2pStatusChanged(state: any, action: any) {
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _setPassword(state: any, { conference, method, password }
-    : {conference: any, method: Object, password: string}) {
+function _setPassword(state: IConferenceState, { conference, method, password }: {
+    conference: IJitsiConference; method: Object; password: string; }) {
     switch (method) {
     case conference.join:
         return assign(state, {
@@ -436,7 +579,7 @@ function _setPassword(state: any, { conference, method, password }
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _setRoom(state: any, action: any) {
+function _setRoom(state: IConferenceState, action: AnyAction) {
     let { room } = action;
 
     if (!isRoomValid(room)) {
@@ -453,7 +596,10 @@ function _setRoom(state: any, action: any) {
      */
     return assign(state, {
         error: undefined,
-        room
+        localSubject: undefined,
+        pendingSubjectChange: undefined,
+        room,
+        subject: undefined
     });
 }
 

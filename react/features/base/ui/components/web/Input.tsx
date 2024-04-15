@@ -1,32 +1,45 @@
-import { makeStyles } from '@material-ui/core';
-import clsx from 'clsx';
 import React, { useCallback } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
+import { makeStyles } from 'tss-react/mui';
 
 import { isMobileBrowser } from '../../../environment/utils';
 import Icon from '../../../icons/components/Icon';
-import { IconCloseCircle } from '../../../icons/svg/index';
+import { IconCloseCircle } from '../../../icons/svg';
 import { withPixelLineHeight } from '../../../styles/functions.web';
-import { Theme } from '../../../ui/types';
-import { InputProps } from '../types';
+import { IInputProps } from '../types';
 
-interface IInputProps extends InputProps {
+interface IProps extends IInputProps {
     accessibilityLabel?: string;
+    autoComplete?: string;
     autoFocus?: boolean;
     bottomLabel?: string;
     className?: string;
     iconClick?: () => void;
-    id?: string;
+
+    /**
+     * The id to set on the input element.
+     * This is required because we need it internally to tie the input to its
+     * info (label, error) so that screen reader users don't get lost.
+     */
+    id: string;
     maxLength?: number;
     maxRows?: number;
+    maxValue?: number;
     minRows?: number;
+    minValue?: number;
+    mode?: 'text' | 'none' | 'decimal' | 'numeric' | 'tel' | 'search' | ' email' | 'url';
     name?: string;
+    onBlur?: (e: any) => void;
+    onFocus?: (event: React.FocusEvent) => void;
     onKeyPress?: (e: React.KeyboardEvent) => void;
+    readOnly?: boolean;
+    required?: boolean;
+    testId?: string;
     textarea?: boolean;
     type?: 'text' | 'email' | 'number' | 'password';
 }
 
-const useStyles = makeStyles((theme: Theme) => {
+const useStyles = makeStyles()(theme => {
     return {
         inputContainer: {
             display: 'flex',
@@ -36,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) => {
         label: {
             color: theme.palette.text01,
             ...withPixelLineHeight(theme.typography.bodyShortRegular),
-            marginBottom: `${theme.spacing(2)}px`,
+            marginBottom: theme.spacing(2),
 
             '&.is-mobile': {
                 ...withPixelLineHeight(theme.typography.bodyShortRegularLarge)
@@ -50,6 +63,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
         input: {
             backgroundColor: theme.palette.ui03,
+            background: theme.palette.ui03,
             color: theme.palette.text01,
             ...withPixelLineHeight(theme.typography.bodyShortRegular),
             padding: '10px 16px',
@@ -87,6 +101,15 @@ const useStyles = makeStyles((theme: Theme) => {
             }
         },
 
+        'input::-webkit-outer-spin-button, input::-webkit-inner-spin-button': {
+            '-webkit-appearance': 'none',
+            margin: 0
+        },
+
+        'input[type=number]': {
+            '-moz-appearance': 'textfield'
+        },
+
         icon: {
             position: 'absolute',
             top: '50%',
@@ -113,7 +136,7 @@ const useStyles = makeStyles((theme: Theme) => {
         },
 
         bottomLabel: {
-            marginTop: `${theme.spacing(2)}px`,
+            marginTop: theme.spacing(2),
             ...withPixelLineHeight(theme.typography.labelRegular),
             color: theme.palette.text02,
 
@@ -128,8 +151,9 @@ const useStyles = makeStyles((theme: Theme) => {
     };
 });
 
-const Input = React.forwardRef<any, IInputProps>(({
+const Input = React.forwardRef<any, IProps>(({
     accessibilityLabel,
+    autoComplete,
     autoFocus,
     bottomLabel,
     className,
@@ -140,80 +164,110 @@ const Input = React.forwardRef<any, IInputProps>(({
     iconClick,
     id,
     label,
+    maxValue,
     maxLength,
     maxRows,
+    minValue,
     minRows,
+    mode,
     name,
+    onBlur,
     onChange,
+    onFocus,
     onKeyPress,
     placeholder,
+    readOnly = false,
+    required,
+    testId,
     textarea = false,
     type = 'text',
     value
-}: IInputProps, ref) => {
-    const styles = useStyles();
+}: IProps, ref) => {
+    const { classes: styles, cx } = useStyles();
     const isMobile = isMobileBrowser();
 
-    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>) =>
-        onChange(e.target.value), []);
+    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+        onChange?.(e.target.value), []);
 
-    const clearInput = useCallback(() => onChange(''), []);
+    const clearInput = useCallback(() => onChange?.(''), []);
 
-    return (<div className = { clsx(styles.inputContainer, className) }>
-        {label && <span className = { clsx(styles.label, isMobile && 'is-mobile') }>{label}</span>}
-        <div className = { styles.fieldContainer }>
-            {icon && <Icon
-                { ...(iconClick ? { tabIndex: 0 } : {}) }
-                className = { clsx(styles.icon, iconClick && styles.iconClickable) }
-                onClick = { iconClick }
-                size = { 20 }
-                src = { icon } />}
-            {textarea ? (
-                <TextareaAutosize
-                    aria-label = { accessibilityLabel }
-                    autoFocus = { autoFocus }
-                    className = { clsx(styles.input, isMobile && 'is-mobile',
-                        error && 'error', clearable && styles.clearableInput, icon && 'icon-input') }
-                    disabled = { disabled }
-                    { ...(id ? { id } : {}) }
-                    maxRows = { maxRows }
-                    minRows = { minRows }
-                    name = { name }
-                    onChange = { handleChange }
-                    onKeyPress = { onKeyPress }
-                    placeholder = { placeholder }
-                    ref = { ref }
-                    value = { value } />
-            ) : (
-                <input
-                    aria-label = { accessibilityLabel }
-                    autoFocus = { autoFocus }
-                    className = { clsx(styles.input, isMobile && 'is-mobile',
-                        error && 'error', clearable && styles.clearableInput, icon && 'icon-input') }
-                    disabled = { disabled }
-                    { ...(id ? { id } : {}) }
-                    maxLength = { maxLength }
-                    name = { name }
-                    onChange = { handleChange }
-                    onKeyPress = { onKeyPress }
-                    placeholder = { placeholder }
-                    ref = { ref }
-                    type = { type }
-                    value = { value } />
-            )}
-            {clearable && !disabled && value !== '' && <button className = { styles.clearButton }>
-                <Icon
-                    onClick = { clearInput }
+    return (
+        <div className = { cx(styles.inputContainer, className) }>
+            {label && <label
+                className = { cx(styles.label, isMobile && 'is-mobile') }
+                htmlFor = { id } >
+                {label}
+            </label>}
+            <div className = { styles.fieldContainer }>
+                {icon && <Icon
+                    { ...(iconClick ? { tabIndex: 0 } : {}) }
+                    className = { cx(styles.icon, iconClick && styles.iconClickable) }
+                    onClick = { iconClick }
                     size = { 20 }
-                    src = { IconCloseCircle } />
-            </button>}
+                    src = { icon } />}
+                {textarea ? (
+                    <TextareaAutosize
+                        aria-label = { accessibilityLabel }
+                        autoComplete = { autoComplete }
+                        autoFocus = { autoFocus }
+                        className = { cx(styles.input, isMobile && 'is-mobile',
+                            error && 'error', clearable && styles.clearableInput, icon && 'icon-input') }
+                        disabled = { disabled }
+                        id = { id }
+                        maxLength = { maxLength }
+                        maxRows = { maxRows }
+                        minRows = { minRows }
+                        name = { name }
+                        onChange = { handleChange }
+                        onKeyPress = { onKeyPress }
+                        placeholder = { placeholder }
+                        readOnly = { readOnly }
+                        ref = { ref }
+                        required = { required }
+                        value = { value } />
+                ) : (
+                    <input
+                        aria-describedby = { bottomLabel ? `${id}-description` : undefined }
+                        aria-label = { accessibilityLabel }
+                        autoComplete = { autoComplete }
+                        autoFocus = { autoFocus }
+                        className = { cx(styles.input, isMobile && 'is-mobile',
+                            error && 'error', clearable && styles.clearableInput, icon && 'icon-input') }
+                        data-testid = { testId }
+                        disabled = { disabled }
+                        id = { id }
+                        { ...(mode ? { inputmode: mode } : {}) }
+                        { ...(type === 'number' ? { max: maxValue } : {}) }
+                        maxLength = { maxLength }
+                        { ...(type === 'number' ? { min: minValue } : {}) }
+                        name = { name }
+                        onBlur = { onBlur }
+                        onChange = { handleChange }
+                        onFocus = { onFocus }
+                        onKeyPress = { onKeyPress }
+                        placeholder = { placeholder }
+                        readOnly = { readOnly }
+                        ref = { ref }
+                        required = { required }
+                        type = { type }
+                        value = { value } />
+                )}
+                {clearable && !disabled && value !== '' && <button className = { styles.clearButton }>
+                    <Icon
+                        onClick = { clearInput }
+                        size = { 20 }
+                        src = { IconCloseCircle } />
+                </button>}
+            </div>
+            {bottomLabel && (
+                <span
+                    className = { cx(styles.bottomLabel, isMobile && 'is-mobile', error && 'error') }
+                    id = { `${id}-description` }>
+                    {bottomLabel}
+                </span>
+            )}
         </div>
-        {bottomLabel && (
-            <span className = { clsx(styles.bottomLabel, isMobile && 'is-mobile', error && 'error') }>
-                {bottomLabel}
-            </span>
-        )}
-    </div>);
+    );
 });
 
 export default Input;

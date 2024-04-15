@@ -1,6 +1,5 @@
-// @ts-ignore
 import JitsiMeetJS from '../lib-jitsi-meet';
-import Platform from '../react/Platform.web';
+import Platform from '../react/Platform';
 
 import { isMobileBrowser } from './utils';
 
@@ -8,10 +7,11 @@ const { browser } = JitsiMeetJS.util;
 
 const DEFAULT_OPTIMAL_BROWSERS = [
     'chrome',
+    'chromium',
     'electron',
     'firefox',
-    'nwjs',
-    'safari'
+    'safari',
+    'webkit'
 ];
 
 const DEFAULT_UNSUPPORTED_BROWSERS: string[] = [];
@@ -21,13 +21,9 @@ const browserNameToCheck = {
     chromium: browser.isChromiumBased.bind(browser),
     electron: browser.isElectron.bind(browser),
     firefox: browser.isFirefox.bind(browser),
-    nwjs: browser.isNWJS.bind(browser),
-    opera: browser.isOpera.bind(browser),
-    safari: browser.isSafari.bind(browser)
+    safari: browser.isSafari.bind(browser),
+    webkit: browser.isWebKitBased.bind(browser)
 };
-
-// eslint-disable-next-line no-var
-declare var interfaceConfig: any;
 
 /**
  * Returns whether or not jitsi is optimized and targeted for the  provided

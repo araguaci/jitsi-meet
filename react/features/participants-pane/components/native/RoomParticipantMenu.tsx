@@ -1,21 +1,18 @@
-/* eslint-disable lines-around-comment */
 import React, { PureComponent } from 'react';
 import { WithTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { Text, TextStyle, View, ViewStyle } from 'react-native';
+import { connect } from 'react-redux';
 
-// @ts-ignore
-import { Avatar } from '../../../base/avatar';
-// @ts-ignore
-import { BottomSheet, hideSheet } from '../../../base/dialog';
-// @ts-ignore
+import { IReduxState, IStore } from '../../../app/types';
+import Avatar from '../../../base/avatar/components/Avatar';
+import { hideSheet } from '../../../base/dialog/actions';
+import BottomSheet from '../../../base/dialog/components/native/BottomSheet';
 import { bottomSheetStyles } from '../../../base/dialog/components/native/styles';
 import { translate } from '../../../base/i18n/functions';
-import { connect } from '../../../base/redux/functions';
-// @ts-ignore
 import { getBreakoutRooms } from '../../../breakout-rooms/functions';
+// eslint-disable-next-line lines-around-comment
 // @ts-ignore
 import SendToBreakoutRoom from '../../../video-menu/components/native/SendToBreakoutRoom';
-// @ts-ignore
 import styles from '../../../video-menu/components/native/styles';
 
 /**
@@ -23,44 +20,44 @@ import styles from '../../../video-menu/components/native/styles';
  */
 const AVATAR_SIZE = 24;
 
-interface Props extends WithTranslation {
+interface IProps extends WithTranslation {
 
     /**
      * The list of all breakout rooms.
      */
-    _rooms: Array<any>,
+    _rooms: Array<any>;
 
     /**
      * The Redux dispatch function.
      */
-    dispatch: Function,
+    dispatch: IStore['dispatch'];
 
     /**
      * The jid of the selected participant.
      */
-    participantJid: string,
+    participantJid: string;
 
     /**
      * The display name of the selected participant.
      */
-    participantName: string,
+    participantName: string;
 
     /**
      * The room the participant is in.
      */
-    room: any
+    room: any;
 }
 
 /**
  * Class to implement a popup menu that opens upon long pressing a thumbnail.
  */
-class RoomParticipantMenu extends PureComponent<Props> {
+class RoomParticipantMenu extends PureComponent<IProps> {
     /**
      * Constructor of the component.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props: IProps) {
         super(props);
 
         this._onCancel = this._onCancel.bind(this);
@@ -85,8 +82,8 @@ class RoomParticipantMenu extends PureComponent<Props> {
             <BottomSheet
                 renderHeader = { this._renderMenuHeader }
                 showSlidingView = { true }>
-                <View style = { styles.contextMenuItem }>
-                    <Text style = { styles.contextMenuItemText }>
+                <View style = { styles.contextMenuItem as ViewStyle }>
+                    <Text style = { styles.contextMenuItemText as ViewStyle }>
                         {t('breakoutRooms.actions.sendToBreakoutRoom')}
                     </Text>
                 </View>
@@ -120,11 +117,11 @@ class RoomParticipantMenu extends PureComponent<Props> {
             <View
                 style = { [
                     bottomSheetStyles.sheet,
-                    styles.participantNameContainer ] }>
+                    styles.participantNameContainer ] as ViewStyle[] }>
                 <Avatar
                     displayName = { participantName }
                     size = { AVATAR_SIZE } />
-                <Text style = { styles.participantNameLabel }>
+                <Text style = { styles.participantNameLabel as TextStyle }>
                     { participantName }
                 </Text>
             </View>
@@ -137,9 +134,9 @@ class RoomParticipantMenu extends PureComponent<Props> {
  *
  * @param {Object} state - Redux state.
  * @private
- * @returns {Props}
+ * @returns {IProps}
  */
-function _mapStateToProps(state: any) {
+function _mapStateToProps(state: IReduxState) {
     return {
         _rooms: Object.values(getBreakoutRooms(state))
     };

@@ -57,6 +57,7 @@
         },
         "noMessagesMessage": "אין עדיין הודעות בפגישה. התחל שיחה כאן!",
         "privateNotice": "הודעה פרטית אל {{recipient}}",
+        "sendButton": "שלח",
         "title": "צ'אט",
         "titleWithPolls": "צ'אט",
         "you": "אתה"
@@ -90,7 +91,6 @@
         "bitrate": "קצב סיביות:",
         "bridgeCount": "מספר שרתים: ",
         "connectedTo": "מחובר אל:",
-        "e2e_rtt": "E2E RTT:",
         "framerate": "קצב מסגרת:",
         "less": "הצג פחות",
         "localaddress": "כתובת מקומית:",
@@ -301,7 +301,7 @@
         "veryGood": "מעולה"
     },
     "helpView": {
-        "header": "מרכז העזרה"
+        "title": "מרכז העזרה"
     },
     "incomingCall": {
         "answer": "תשובה",
@@ -400,6 +400,7 @@
         "signedInAs": "אתה מחובר כעת כ:",
         "start": "התחל שידור חי",
         "streamIdHelp": "מה זה?",
+        "title": "שידור חי",
         "unavailableTitle": "שידור חי לא זמין",
         "youtubeTerms": "תנאי השירות של יוטיוב"
     },
@@ -476,6 +477,11 @@
     },
     "passwordDigitsOnly": "עד {{number}} ספרות",
     "passwordSetRemotely": "נקבע על ידי חבר אחר",
+    "polls": {
+        "errors": {
+            "notUniqueOption": "האפשרויות חייבות להיות ייחודיות"
+        }
+    },
     "poweredby": "מופעל על ידי",
     "presenceStatus": {
         "busy": "עסוק",
@@ -522,6 +528,7 @@
         "serviceName": "שירותי הקלטה",
         "signIn": "התחבר",
         "signOut": "התנתק",
+        "title": "מקליט",
         "unavailable": "אופס! {{ServiceName}} אינו זמין כרגע. אנו עובדים על פיתרון הבעיה. אנא נסה שוב מאוחר יותר.",
         "unavailableTitle": "הקלטה אינה זמינה"
     },
@@ -581,6 +588,8 @@
         "hours": "{{count}} שעות",
         "minutes": "{{count}} דקות",
         "name": "שם",
+        "search": "לחפש",
+        "searchHint": "חפש משתתפים",
         "seconds": "{{count}} שניות",
         "speakerStats": "סטטיסטיקות דיבורים",
         "speakerTime": "זמן דיבור"

@@ -1,21 +1,17 @@
-import { makeStyles } from '@material-ui/core';
-import clsx from 'clsx';
 import React from 'react';
+import { makeStyles } from 'tss-react/mui';
 
 import { isMobileBrowser } from '../../../environment/utils';
 import Icon from '../../../icons/components/Icon';
-import { IconCheckMark } from '../../../icons/svg';
+import { IconCheck } from '../../../icons/svg';
 import { withPixelLineHeight } from '../../../styles/functions.web';
-// eslint-disable-next-line lines-around-comment
-// @ts-ignore
-import BaseTheme from '../BaseTheme.web';
 
-interface CheckboxProps {
+interface ICheckboxProps {
 
     /**
      * Whether the input is checked or not.
      */
-    checked: boolean;
+    checked?: boolean;
 
     /**
      * Class name for additional styles.
@@ -43,7 +39,7 @@ interface CheckboxProps {
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const useStyles = makeStyles((theme: any) => {
+const useStyles = makeStyles()(theme => {
     return {
         formControl: {
             ...withPixelLineHeight(theme.typography.bodyLongRegular),
@@ -55,6 +51,10 @@ const useStyles = makeStyles((theme: any) => {
                 ...withPixelLineHeight(theme.typography.bodyLongRegularLarge)
 
             }
+        },
+
+        disabled: {
+            cursor: 'not-allowed'
         },
 
         activeArea: {
@@ -70,14 +70,13 @@ const useStyles = makeStyles((theme: any) => {
             '& input[type="checkbox"]': {
                 appearance: 'none',
                 backgroundColor: 'transparent',
-                margin: 0,
+                margin: '3px',
                 font: 'inherit',
                 color: theme.palette.icon03,
                 width: '18px',
                 height: '18px',
                 border: `2px solid ${theme.palette.icon03}`,
                 borderRadius: '3px',
-                cursor: 'pointer',
 
                 display: 'grid',
                 placeContent: 'center',
@@ -152,26 +151,29 @@ const Checkbox = ({
     label,
     name,
     onChange
-}: CheckboxProps) => {
-    const styles = useStyles();
+}: ICheckboxProps) => {
+    const { classes: styles, cx, theme } = useStyles();
     const isMobile = isMobileBrowser();
 
-    return (<div className = { clsx(styles.formControl, isMobile && 'is-mobile', className) }>
-        <label className = { clsx(styles.activeArea, isMobile && 'is-mobile') }>
-            <input
-                checked = { checked }
-                disabled = { disabled }
-                name = { name }
-                onChange = { onChange }
-                type = 'checkbox' />
-            <Icon
-                className = 'checkmark'
-                color = { disabled ? BaseTheme.palette.icon03 : BaseTheme.palette.icon01 }
-                size = { 18 }
-                src = { IconCheckMark } />
+    return (
+        <label className = { cx(styles.formControl, isMobile && 'is-mobile', className) }>
+            <div className = { cx(styles.activeArea, isMobile && 'is-mobile', disabled && styles.disabled) }>
+                <input
+                    checked = { checked }
+                    disabled = { disabled }
+                    name = { name }
+                    onChange = { onChange }
+                    type = 'checkbox' />
+                <Icon
+                    aria-hidden = { true }
+                    className = 'checkmark'
+                    color = { disabled ? theme.palette.icon03 : theme.palette.icon01 }
+                    size = { 18 }
+                    src = { IconCheck } />
+            </div>
+            <div>{label}</div>
         </label>
-        <label>{label}</label>
-    </div>);
+    );
 };
 
 export default Checkbox;

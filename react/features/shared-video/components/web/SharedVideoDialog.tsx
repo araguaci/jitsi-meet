@@ -1,9 +1,9 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
-// @ts-ignore
-import { Dialog } from '../../../base/dialog';
+import { hideDialog } from '../../../base/dialog/actions';
 import { translate } from '../../../base/i18n/functions';
-import { connect } from '../../../base/redux/functions';
+import Dialog from '../../../base/ui/components/web/Dialog';
 import Input from '../../../base/ui/components/web/Input';
 import AbstractSharedVideoDialog from '../AbstractSharedVideoDialog';
 
@@ -53,7 +53,9 @@ class SharedVideoDialog extends AbstractSharedVideoDialog<any> {
     _onSubmitValue() {
         const result = super._onSetVideoLink(this.state.value);
 
-        if (!result) {
+        if (result) {
+            this.props.dispatch(hideDialog());
+        } else {
             this.setState({
                 error: true
             });
@@ -73,22 +75,25 @@ class SharedVideoDialog extends AbstractSharedVideoDialog<any> {
 
         return (
             <Dialog
-                hideCancelButton = { false }
-                okDisabled = { this.state.okDisabled }
-                okKey = { t('dialog.Share') }
+                disableAutoHideOnSubmit = { true }
+                ok = {{
+                    disabled: this.state.okDisabled,
+                    translationKey: 'dialog.Share'
+                }}
                 onSubmit = { this._onSubmitValue }
-                titleKey = { t('dialog.shareVideoTitle') }
-                width = { 'small' }>
+                titleKey = 'dialog.shareVideoTitle'>
                 <Input
                     autoFocus = { true }
+                    bottomLabel = { error && t('dialog.sharedVideoDialogError') }
+                    className = 'dialog-bottom-margin'
                     error = { error }
+                    id = 'shared-video-url-input'
                     label = { t('dialog.videoLink') }
                     name = 'sharedVideoUrl'
                     onChange = { this._onChange }
                     placeholder = { t('dialog.sharedVideoLinkPlaceholder') }
                     type = 'text'
                     value = { this.state.value } />
-                { error && <span className = 'shared-video-dialog-error'>{ t('dialog.sharedVideoDialogError') }</span> }
             </Dialog>
         );
     }

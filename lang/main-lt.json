@@ -57,6 +57,7 @@
         },
         "noMessagesMessage": "Susitikime dar nėra pranešimų. Pradėkite pokalbį čia!",
         "privateNotice": "Asmeninis pranešimas {{gavėjui}}",
+        "sendButton": "Siųsti",
         "title": "Pokalbis",
         "titleWithPolls": "Pokalbis",
         "you": "Jūs"
@@ -90,7 +91,6 @@
         "bitrate": "Bitrate:",
         "bridgeCount": "Serverių skaičius: ",
         "connectedTo": "Prijungta prie:",
-        "e2e_rtt": "E2E RTT:",
         "framerate": "Kadrų dažnis:",
         "less": "Rodyti mažiau",
         "localaddress": "Vietinis adresas:",
@@ -395,6 +395,7 @@
         "signedInAs": "Jūs šiuo metu prisijungęs(-usi) kaip :",
         "start": "Pradėti tiesioginę transliaciją",
         "streamIdHelp": "Kas tai?",
+        "title": "Tiesioginis srautas",
         "unavailableTitle": "Tiesioginė transliacija negalima"
     },
     "localRecording": {
@@ -466,6 +467,11 @@
     },
     "passwordDigitsOnly": "Daugiausia {{number}} skaičių",
     "passwordSetRemotely": "nustatytas kito naudotojo",
+    "polls": {
+        "errors": {
+            "notUniqueOption": "Parinktys turi būti unikalios"
+        }
+    },
     "poweredby": "pateikiamas",
     "presenceStatus": {
         "busy": "Užimtas",
@@ -512,6 +518,7 @@
         "serviceName": "Įrašymo tarnyba",
         "signIn": "Prisijungti",
         "signOut": "Atsijungti",
+        "title": "Įrašoma",
         "unavailable": "Oi! {{serviceName}} šiuo metu nėra pasiekiamas. Mes dirbame, kad išspręsti šią problemą. Pabandykite dar kartą vėliau.",
         "unavailableTitle": "Įrašas negalimas"
     },
@@ -569,6 +576,8 @@
         "hours": "{{count}}h",
         "minutes": "{{count}}m",
         "name": "Vardas",
+        "search": "Ieškoti",
+        "searchHint": "Ieškokite dalyvių",
         "seconds": "{{count}}s",
         "speakerStats": "Garsiakalbio nuostatos",
         "speakerTime": "Garsiakalbio laikas"

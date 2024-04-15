@@ -1,10 +1,10 @@
 -- Prosody IM
--- Copyright (C) 2017 Atlassian
+-- Copyright (C) 2021-present 8x8, Inc.
 --
 
 local jid = require "util.jid";
 local it = require "util.iterators";
-local json = require "util.json";
+local json = require 'cjson.safe';
 local iterators = require "util.iterators";
 local array = require"util.array";
 

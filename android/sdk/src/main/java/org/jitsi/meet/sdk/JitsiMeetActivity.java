@@ -16,11 +16,13 @@
 
 package org.jitsi.meet.sdk;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -85,6 +87,14 @@ public class JitsiMeetActivity extends AppCompatActivity
 
     // Overrides
     //
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Intent intent = new Intent("onConfigurationChanged");
+        intent.putExtra("newConfig", newConfig);
+        this.sendBroadcast(intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,8 +178,11 @@ public class JitsiMeetActivity extends AppCompatActivity
     }
 
     protected void leave() {
-        Intent hangupBroadcastIntent = BroadcastIntentHelper.buildHangUpIntent();
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(hangupBroadcastIntent);
+        if (this.jitsiView != null) {
+            this.jitsiView.abort();
+        } else {
+            JitsiMeetLogger.w("Cannot leave, view is null");
+        }
     }
 
     private @Nullable
@@ -242,6 +255,14 @@ public class JitsiMeetActivity extends AppCompatActivity
         finish();
     }
 
+//    protected void onTranscriptionChunkReceived(HashMap<String, Object> extraData) {
+//        JitsiMeetLogger.i("Transcription chunk received: " + extraData);
+//    }
+
+//    protected void onCustomOverflowMenuButtonPressed(HashMap<String, Object> extraData) {
+//        JitsiMeetLogger.i("Custom overflow menu button pressed: " + extraData);
+//    }
+
     // Activity lifecycle methods
     //
 
@@ -286,6 +307,7 @@ public class JitsiMeetActivity extends AppCompatActivity
         JitsiMeetActivityDelegate.requestPermissions(this, permissions, requestCode, listener);
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         JitsiMeetActivityDelegate.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -324,6 +346,12 @@ public class JitsiMeetActivity extends AppCompatActivity
                 case READY_TO_CLOSE:
                     onReadyToClose();
                     break;
+//                case TRANSCRIPTION_CHUNK_RECEIVED:
+//                    onTranscriptionChunkReceived(event.getData());
+//                    break;
+//                case CUSTOM_OVERFLOW_MENU_BUTTON_PRESSED:
+//                    onCustomOverflowMenuButtonPressed(event.getData());
+//                    break;
             }
         }
     }

@@ -1,37 +1,4 @@
-type ToolbarButtons = 'camera' |
-    'chat' |
-    'closedcaptions' |
-    'desktop' |
-    'dock-iframe' |
-    'download' |
-    'embedmeeting' |
-    'etherpad' |
-    'feedback' |
-    'filmstrip' |
-    'fullscreen' |
-    'hangup' |
-    'help' |
-    'highlight' |
-    'invite' |
-    'linktosalesforce' |
-    'livestreaming' |
-    'microphone' |
-    'participants-pane' |
-    'profile' |
-    'raisehand' |
-    'recording' |
-    'security' |
-    'select-background' |
-    'settings' |
-    'shareaudio' |
-    'sharedvideo' |
-    'shortcuts' |
-    'stats' |
-    'tileview' |
-    'toggle-camera' |
-    'undock-iframe' |
-    'videoquality' |
-    '__end';
+import { ToolbarButton } from '../../toolbox/types';
 
 type ButtonsWithNotifyClick = 'camera' |
     'chat' |
@@ -39,11 +6,13 @@ type ButtonsWithNotifyClick = 'camera' |
     'desktop' |
     'download' |
     'embedmeeting' |
+    'end-meeting' |
     'etherpad' |
     'feedback' |
     'filmstrip' |
     'fullscreen' |
     'hangup' |
+    'hangup-menu' |
     'help' |
     'invite' |
     'livestreaming' |
@@ -67,7 +36,34 @@ type ButtonsWithNotifyClick = 'camera' |
     'add-passcode' |
     '__end';
 
-type Sounds = 'ASKED_TO_UNMUTE_SOUND' |
+type ParticipantMenuButtonsWithNotifyClick = 'allow-video' |
+    'ask-unmute' |
+    'conn-status' |
+    'flip-local-video' |
+    'grant-moderator' |
+    'hide-self-view' |
+    'kick' |
+    'mute' |
+    'mute-others' |
+    'mute-others-video' |
+    'mute-video' |
+    'pinToStage' |
+    'privateMessage' |
+    'remote-control' |
+    'send-participant-to-room' |
+    'verify';
+
+type NotifyClickButtonKey = string |
+    ButtonsWithNotifyClick |
+    ParticipantMenuButtonsWithNotifyClick;
+
+export type NotifyClickButton = NotifyClickButtonKey |
+    {
+        key: NotifyClickButtonKey;
+        preventExecution: boolean;
+    };
+
+export type Sounds = 'ASKED_TO_UNMUTE_SOUND' |
     'E2EE_OFF_SOUND' |
     'E2EE_ON_SOUND' |
     'INCOMING_MSG_SOUND' |
@@ -88,10 +84,88 @@ type Sounds = 'ASKED_TO_UNMUTE_SOUND' |
     'RECORDING_ON_SOUND' |
     'TALK_WHILE_MUTED_SOUND';
 
+
+export interface IMobileDynamicLink {
+    apn: string;
+    appCode: string;
+    customDomain?: string;
+    ibi: string;
+    isi: string;
+}
+
+export interface IDeeplinkingPlatformConfig {
+    appName: string;
+    appScheme: string;
+}
+
+export interface IDeeplinkingMobileConfig extends IDeeplinkingPlatformConfig {
+    appPackage?: string;
+    downloadLink: string;
+    dynamicLink?: IMobileDynamicLink;
+    fDroidUrl?: string;
+}
+
+export interface IDesktopDownloadConfig {
+    linux?: string;
+    macos?: string;
+    windows?: string;
+}
+
+export interface IDeeplinkingDesktopConfig extends IDeeplinkingPlatformConfig {
+    download?: IDesktopDownloadConfig;
+    enabled: boolean;
+}
+
+export interface IDeeplinkingConfig {
+    android?: IDeeplinkingMobileConfig;
+    desktop?: IDeeplinkingDesktopConfig;
+    disabled?: boolean;
+    hideLogo?: boolean;
+    ios?: IDeeplinkingMobileConfig;
+}
+
+export interface INoiseSuppressionConfig {
+    krisp?: {
+        debugLogs?: boolean;
+        enabled?: boolean;
+        logProcessStats?: boolean;
+    };
+}
+
+export interface IWhiteboardConfig {
+    collabServerBaseUrl?: string;
+    enabled?: boolean;
+    limitUrl?: string;
+    userLimit?: number;
+}
+
+export interface IWatchRTCConfiguration {
+    allowBrowserLogCollection?: boolean;
+    collectionInterval?: number;
+    console?: {
+        level: string;
+        override: boolean;
+    };
+    debug?: boolean;
+    keys?: any;
+    logGetStats?: boolean;
+    proxyUrl?: string;
+    rtcApiKey: string;
+    rtcPeerId?: string;
+    rtcRoomId?: string;
+    rtcTags?: string[];
+    rtcToken?: string;
+    wsUrl?: string;
+}
+
 export interface IConfig {
     _desktopSharingSourceDevice?: string;
+    _immediateReloadThreshold?: string;
+    _screenshotHistoryRegionUrl?: number;
     analytics?: {
         amplitudeAPPKey?: string;
+        amplitudeIncludeUTM?: boolean;
+        blackListedEvents?: string[];
         disabled?: boolean;
         googleAnalyticsTrackingId?: string;
         matomoEndpoint?: string;
@@ -99,50 +173,44 @@ export interface IConfig {
         obfuscateRoomName?: boolean;
         rtcstatsEnabled?: boolean;
         rtcstatsEndpoint?: string;
-        rtcstatsPolIInterval?: number;
+        rtcstatsPollInterval?: number;
+        rtcstatsSendSdp?: boolean;
+        rtcstatsStoreLogs?: boolean;
+        rtcstatsUseLegacy?: boolean;
         scriptURLs?: Array<string>;
+        watchRTCEnabled?: boolean;
+        whiteListedEvents?: string[];
     };
     apiLogLevels?: Array<'warn' | 'log' | 'error' | 'info' | 'debug'>;
+    appId?: string;
     audioLevelsInterval?: number;
     audioQuality?: {
-        opusMaxAverageBitrate?: number|null;
+        opusMaxAverageBitrate?: number | null;
         stereo?: boolean;
     };
     autoCaptionOnRecord?: boolean;
     autoKnockLobby?: boolean;
     backgroundAlpha?: number;
     bosh?: string;
+    brandingDataUrl?: string;
     brandingRoomAlias?: string;
     breakoutRooms?: {
         hideAddRoomButton?: boolean;
         hideAutoAssignButton?: boolean;
         hideJoinRoomButton?: boolean;
     };
-    buttonsWithNotifyClick?: Array<ButtonsWithNotifyClick | { key: ButtonsWithNotifyClick; preventExecution: boolean }>;
-    callStatsConfigParams?: {
-        additionalIDs?: {
-            customerID?: string;
-            fqExtensionID?: string;
-            meetingsName?: string;
-            pbxExtensionID?: string;
-            pbxID?: string;
-            productName?: string;
-            serverName?: string;
-            sessionID?: string;
-            tenantID?: string;
-        };
-        applicationVersion?: string;
-        collectIP?: boolean;
-        collectLegacyStats?: boolean;
-        disableBeforeUnloadHandler?: boolean;
-        disablePrecalltest?: boolean;
-        siteID?: string;
-    };
-    callStatsID?: string;
-    callStatsSecret?: string;
+    buttonsWithNotifyClick?: Array<ButtonsWithNotifyClick | {
+        key: ButtonsWithNotifyClick;
+        preventExecution: boolean;
+    }>;
+    callDisplayName?: string;
+    callFlowsEnabled?: boolean;
+    callHandle?: string;
+    callUUID?: string;
+    cameraFacingMode?: string;
     channelLastN?: number;
     chromeExtensionBanner?: {
-        chromeExtensionsInfo?: Array<{id: string; path: string}>;
+        chromeExtensionsInfo?: Array<{ id: string; path: string; }>;
         edgeUrl?: string;
         url?: string;
     };
@@ -150,6 +218,7 @@ export interface IConfig {
         alwaysVisible?: Array<string>;
         autoHide?: Array<string>;
     };
+    conferenceRequestUrl?: string;
     connectionIndicators?: {
         autoHide?: boolean;
         autoHideTimeout?: number;
@@ -163,14 +232,21 @@ export interface IConfig {
                 ideal?: number;
                 max?: number;
                 min?: number;
-            }
-        }
+            };
+        };
     };
     corsAvatarURLs?: Array<string>;
+    customParticipantMenuButtons?: Array<{ icon: string; id: string; text: string; }>;
+    customToolbarButtons?: Array<{ backgroundColor?: string; icon: string; id: string; text: string; }>;
+    deeplinking?: IDeeplinkingConfig;
     defaultLanguage?: string;
     defaultLocalDisplayName?: string;
+    defaultLogoUrl?: string;
     defaultRemoteDisplayName?: string;
     deploymentInfo?: {
+        envType?: string;
+        environment?: string;
+        product?: string;
         region?: string;
         shard?: string;
         userRegion?: string;
@@ -185,14 +261,17 @@ export interface IConfig {
     };
     dialInConfCodeUrl?: string;
     dialInNumbersUrl?: string;
-    disable1On1Mode?: boolean|null;
+    dialOutAuthUrl?: string;
+    dialOutRegionUrl?: string;
+    disable1On1Mode?: boolean | null;
     disableAddingBackgroundImages?: boolean;
     disableAudioLevels?: boolean;
     disableBeforeUnloadHandlers?: boolean;
     disableChatSmileys?: boolean;
     disableDeepLinking?: boolean;
     disableFilmstripAutohiding?: boolean;
-    disableH264?: boolean;
+    disableFocus?: boolean;
+    disableIframeAPI?: boolean;
     disableIncomingMessageSound?: boolean;
     disableInitialGUM?: boolean;
     disableInviteFunctions?: boolean;
@@ -208,7 +287,6 @@ export interface IConfig {
     disableRemoveRaisedHandOnFocus?: boolean;
     disableResponsiveTiles?: boolean;
     disableRtx?: boolean;
-    disableScreensharingVirtualBackground?: boolean;
     disableSelfView?: boolean;
     disableSelfViewSettings?: boolean;
     disableShortcuts?: boolean;
@@ -218,6 +296,7 @@ export interface IConfig {
     disableThirdPartyRequests?: boolean;
     disableTileEnlargement?: boolean;
     disableTileView?: boolean;
+    disableVirtualBackground?: boolean;
     disabledNotifications?: Array<string>;
     disabledSounds?: Array<Sounds>;
     doNotFlipLocalVideo?: boolean;
@@ -228,12 +307,6 @@ export interface IConfig {
     };
     dynamicBrandingUrl?: string;
     e2ee?: {
-        e2eeLabels?: {
-            description?: string;
-            label?: string;
-            tooltip?: string;
-            warning?: string;
-        };
         externallyManagedKey?: boolean;
         labels?: {
             description?: string;
@@ -260,12 +333,9 @@ export interface IConfig {
     enableDisplayNameInStats?: boolean;
     enableEmailInStats?: boolean;
     enableEncodedTransformSupport?: boolean;
-    enableFeaturesBasedOnToken?: boolean;
     enableForcedReload?: boolean;
     enableIceRestart?: boolean;
     enableInsecureRoomNameWarning?: boolean;
-    enableLayerSuspension?: boolean;
-    enableLipSync?: boolean;
     enableLobbyChat?: boolean;
     enableNoAudioDetection?: boolean;
     enableNoisyMicDetection?: boolean;
@@ -273,7 +343,7 @@ export interface IConfig {
     enableRemb?: boolean;
     enableSaveLogs?: boolean;
     enableTcc?: boolean;
-    enableUnifiedOnChrome?: boolean;
+    enableWebHIDFeature?: boolean;
     enableWelcomePage?: boolean;
     etherpad_base?: string;
     faceLandmarks?: {
@@ -292,25 +362,32 @@ export interface IConfig {
         disableResizable?: boolean;
         disableStageFilmstrip?: boolean;
         disableTopPanel?: boolean;
+        disabled?: boolean;
         minParticipantCountForTopPanel?: number;
     };
+    firefox_fake_device?: string;
     flags?: {
-        sendMultipleVideoStreams?: boolean;
-        sourceNameSignaling?: boolean;
+        ssrcRewritingEnabled: boolean;
     };
     focusUserJid?: string;
     gatherStats?: boolean;
     giphy?: {
         displayMode?: 'all' | 'tile' | 'chat';
         enabled?: boolean;
-        sdkKey?: '';
+        proxyUrl?: string;
+        rating?: 'g' | 'pg' | 'pg-13' | 'r';
+        sdkKey?: string;
         tileTime?: number;
     };
+    googleApiApplicationClientID?: string;
     gravatar?: {
         baseUrl?: string;
         disabled?: boolean;
     };
     gravatarBaseURL?: string;
+    guestDialOutStatusUrl?: string;
+    guestDialOutUrl?: string;
+    helpCentreURL?: string;
     hiddenPremeetingButtons?: Array<'microphone' | 'camera' | 'select-background' | 'invite' | 'settings'>;
     hideAddRoomButton?: boolean;
     hideConferenceSubject?: boolean;
@@ -327,10 +404,22 @@ export interface IConfig {
         domain: string;
         focus?: string;
         muc: string;
+        visitorFocus?: string;
     };
-    inviteAppName?: string|null;
-    lastNLimits?: {
-        [key: number]: number;
+    iAmRecorder?: boolean;
+    iAmSipGateway?: boolean;
+    inviteAppName?: string | null;
+    inviteServiceCallFlowsUrl?: string;
+    inviteServiceUrl?: string;
+    jaasActuatorUrl?: string;
+    jaasConferenceCreatorUrl?: string;
+    jaasFeedbackMetadataURL?: string;
+    jaasTokenUrl?: string;
+    legalUrls?: {
+        helpCentre: string;
+        privacy: string;
+        security: string;
+        terms: string;
     };
     liveStreaming?: {
         dataPrivacyLink?: string;
@@ -340,15 +429,22 @@ export interface IConfig {
         validatorRegExpString?: string;
     };
     liveStreamingEnabled?: boolean;
+    lobby?: {
+        autoKnock?: boolean;
+        enableChat?: boolean;
+    };
     localRecording?: {
         disable?: boolean;
+        disableSelfRecording?: boolean;
         notifyAllParticipants?: boolean;
     };
     localSubject?: string;
-    locationURL?: string;
+    locationURL?: URL;
     maxFullResolutionParticipants?: number;
+    microsoftApiApplicationClientID?: string;
     moderatedRoomServiceUrl?: string;
     mouseMoveCallbackInterval?: number;
+    noiseSuppression?: INoiseSuppressionConfig;
     noticeMessage?: string;
     notificationTimeouts?: {
         long?: number;
@@ -360,22 +456,26 @@ export interface IConfig {
     opusMaxAverageBitrate?: number;
     p2p?: {
         backToP2PDelay?: number;
-        disableH264?: boolean;
-        disabledCodec?: string;
-        enableUnifiedOnChrome?: boolean;
+        codecPreferenceOrder?: Array<string>;
         enabled?: boolean;
         iceTransportPolicy?: string;
-        preferH264?: boolean;
-        preferredCodec?: string;
-        stunServers?: Array<{urls: string}>;
+        mobileCodecPreferenceOrder?: Array<string>;
+        stunServers?: Array<{ urls: string; }>;
     };
+    participantMenuButtonsWithNotifyClick?: Array<string | ParticipantMenuButtonsWithNotifyClick | {
+        key: string | ParticipantMenuButtonsWithNotifyClick;
+        preventExecution: boolean;
+    }>;
     participantsPane?: {
+        enabled?: boolean;
         hideModeratorSettingsTab?: boolean;
         hideMoreActionsButton?: boolean;
         hideMuteAllButton?: boolean;
     };
     pcStatsInterval?: number;
-    preferH264?: boolean;
+    peopleSearchQueryTypes?: string[];
+    peopleSearchUrl?: string;
+    preferBosh?: boolean;
     preferredTranscribeLanguage?: string;
     prejoinConfig?: {
         enabled?: boolean;
@@ -394,12 +494,20 @@ export interface IConfig {
         hideStorageWarning?: boolean;
         sharingEnabled?: boolean;
     };
+    recordingSharingUrl?: string;
+    recordings?: {
+        recordAudioAndVideo?: boolean;
+        showPrejoinWarning?: boolean;
+        suggestRecording?: boolean;
+    };
     remoteVideoMenu?: {
+        disableDemote?: boolean;
         disableGrantModerator?: boolean;
         disableKick?: boolean;
         disablePrivateChat?: boolean;
         disabled?: boolean;
     };
+    replaceParticipant?: string;
     requireDisplayName?: boolean;
     resolution?: number;
     roomPasswordNumberOfDigits?: number;
@@ -408,8 +516,19 @@ export interface IConfig {
         enabled?: boolean;
         mode?: 'always' | 'recording';
     };
-    speakerStatsOrder?: Array<'role'|'name'|'hasLeft'>;
-    startAudioMuted?: boolean;
+    securityUi?: {
+        disableLobbyPassword?: boolean;
+        hideLobbyButton?: boolean;
+    };
+    serviceUrl?: string;
+    sipInviteUrl?: string;
+    speakerStats?: {
+        disableSearch?: boolean;
+        disabled?: boolean;
+        order?: Array<'role' | 'name' | 'hasLeft'>;
+    };
+    speakerStatsOrder?: Array<'role' | 'name' | 'hasLeft'>;
+    startAudioMuted?: number;
     startAudioOnly?: boolean;
     startLastN?: number;
     startScreenSharing?: boolean;
@@ -420,20 +539,23 @@ export interface IConfig {
     stereo?: boolean;
     subject?: string;
     testing?: {
-        callStatsThreshold?: number;
-        capScreenshareBitrate?: number;
+        assumeBandwidth?: boolean;
         disableE2EE?: boolean;
-        enableThumbnailReordering?: boolean;
+        dumpTranscript?: boolean;
         mobileXmppWsThreshold?: number;
         noAutoPlayVideo?: boolean;
         p2pTestMode?: boolean;
-        setScreenSharingResolutionConstraints?: boolean;
+        skipInterimTranscriptions?: boolean;
         testMode?: boolean;
     };
     tileView?: {
+        disabled?: boolean;
         numberOfVisibleTiles?: number;
     };
-    toolbarButtons?: Array<ToolbarButtons>;
+    tokenAuthUrl?: string;
+    tokenAuthUrlAutoRedirect?: string;
+    tokenLogoutUrl?: string;
+    toolbarButtons?: Array<ToolbarButton>;
     toolbarConfig?: {
         alwaysVisible?: boolean;
         autoHideWhileChatIsOpen?: boolean;
@@ -443,32 +565,39 @@ export interface IConfig {
     transcribeWithAppLanguage?: boolean;
     transcribingEnabled?: boolean;
     transcription?: {
-        autoCaptionOnRecord?: boolean;
-        disableStartForAll?: boolean;
+        autoTranscribeOnRecord?: boolean;
         enabled?: boolean;
         preferredLanguage?: string;
+        translationLanguages?: Array<string>;
+        translationLanguagesHead?: Array<string>;
         useAppLanguage?: boolean;
     };
     useHostPageLocalStorage?: boolean;
-    useNewBandwidthAllocationStrategy?: boolean;
     useTurnUdp?: boolean;
     videoQuality?: {
-        disabledCodec?: string;
-        enforcePreferredCodec?: boolean;
+        codecPreferenceOrder?: Array<string>;
         maxBitratesVideo?: {
             [key: string]: {
                 high?: number;
                 low?: number;
                 standard?: number;
-            }
+            };
         };
-        minHeightForQualityLvl: {
+        minHeightForQualityLvl?: {
             [key: number]: string;
         };
-        preferredCodec?: string;
-        resizeDesktopForPresenter?: boolean;
+        mobileCodecPreferenceOrder?: Array<string>;
+        persist?: boolean;
     };
+    watchRTCConfigParams?: IWatchRTCConfiguration;
+    webhookProxyUrl?: string;
     webrtcIceTcpDisable?: boolean;
     webrtcIceUdpDisable?: boolean;
     websocket?: string;
+    websocketKeepAliveUrl?: string;
+    welcomePage?: {
+        customUrl?: string;
+        disabled?: boolean;
+    };
+    whiteboard?: IWhiteboardConfig;
 }

@@ -73,6 +73,7 @@
         },
         "noMessagesMessage": "V sestanku še ni sporočilo. Tukaj začnite pogovor!",
         "privateNotice": "Zasebno sporočilo za uporabnika {{recipient}}",
+        "sendButton": "Pošlji",
         "smileysPanel": "Čustvenčki",
         "tabs": {
             "chat": "Klepet",
@@ -114,7 +115,6 @@
         "bridgeCount": "Število strežnikov: ",
         "codecs": "Kodeki (A/V): ",
         "connectedTo": "Povezan v:",
-        "e2e_rtt": "E2E RTT:",
         "framerate": "Frekvenca slik:",
         "less": "Prikaži manj",
         "localaddress": "Lokalni naslov:",
@@ -385,7 +385,7 @@
         "veryGood": "Zelo dobro"
     },
     "helpView": {
-        "header": "Center za pomoč"
+        "title": "Center za pomoč"
     },
     "incomingCall": {
         "answer": "Odgovori",
@@ -494,12 +494,11 @@
         "signedInAs": "Trenutno ste prijavljeni kot:",
         "start": "Začni prenos v živo",
         "streamIdHelp": "Kaj je to?",
+        "title": "Prenos v živo",
         "unavailableTitle": "Prenos v živo ni na voljo",
         "youtubeTerms": "Pogoji uporabe YouTube"
     },
     "lobby": {
-        "admit": "Sprejmi",
-        "admitAll": "Sprejmi vse",
         "allow": "Dovoli",
         "backToKnockModeButton": "Prosi za dostop",
         "dialogTitle": "Način predsobe",
@@ -530,8 +529,7 @@
         "notificationTitle": "Predsoba",
         "passwordField": "Vnesite geslo sestanka",
         "passwordJoinButton": "Pridruži se",
-        "reject": "Zavrni",
-        "rejectAll": "Zavrni vse",
+        "title": "Predsoba",
         "toggleLabel": "Omogoči predsobo"
     },
     "localRecording": {
@@ -627,6 +625,8 @@
     },
     "participantsPane": {
         "actions": {
+            "admit": "Sprejmi",
+            "admitAll": "Sprejmi vse",
             "allow": "Udeleženci si lahko:",
             "allowVideo": "Dovoli video",
             "askUnmute": "Prosi za vklop mikrofona",
@@ -636,18 +636,19 @@
             "mute": "Izklopi zvok",
             "muteAll": "Izklopi zvok vsem",
             "muteEveryoneElse": "Izklopi zvok vsem ostalim",
+            "reject": "Zavrni",
             "stopEveryonesVideo": "Izklopi video vsem ostalim",
             "stopVideo": "Izklopi video",
             "unblockEveryoneMicCamera": "Dovoli zvok in video vsem udeležencem",
             "videoModeration": "Vklopi njihov video"
         },
         "close": "Zapri",
-        "header": "Udeleženci",
         "headings": {
             "lobby": "Predsoba ({{count}})",
             "participantsList": "Seznam udeležencev ({{count}})",
             "waitingLobby": "Čakajoči v predsobi ({{count}})"
-        }
+        },
+        "title": "Udeleženci"
     },
     "passwordDigitsOnly": "Do {{number}} številk",
     "passwordSetRemotely": "nastavljeno s strani drugega uporabnika",
@@ -666,6 +667,9 @@
             "questionPlaceholder": "Postavi vprašanje",
             "removeOption": "Odstrani možnost",
             "send": "Pošlji"
+        },
+        "errors": {
+            "notUniqueOption": "Možnosti morajo biti edinstvene"
         },
         "notification": {
             "description": "Odpri zavihek z anketami za glasovanje",
@@ -791,6 +795,7 @@
         "serviceName": "Storitev snemanja",
         "signIn": "Prijava",
         "signOut": "Odjava",
+        "title": "Snemanje",
         "unavailable": "Ups! {{ServiceName}} trenutno ni na voljo. Delamo na tem, da težavo odpravimo. Prosimo, poskusite kasneje.",
         "unavailableTitle": "Snemanje ni mogoče",
         "uploadToCloud": "Naloži v oblak"
@@ -873,6 +878,7 @@
         "minutes": "{{count}}m",
         "name": "Ime",
         "search": "Iskanje",
+        "searchHint": "Iskanje udeležencev",
         "seconds": "{{count}}s",
         "speakerStats": "Statistika govorca",
         "speakerTime": "Čas govorjenja"

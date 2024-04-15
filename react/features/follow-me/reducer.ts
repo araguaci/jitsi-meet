@@ -10,15 +10,15 @@ export interface IFollowMeState {
     moderator?: string;
     state?: {
         [key: string]: string;
-    }
+    };
 }
 
 /**
  * Listen for actions that contain the Follow Me feature active state, so that it can be stored.
  */
-ReducerRegistry.register(
+ReducerRegistry.register<IFollowMeState>(
     'features/follow-me',
-    (state: IFollowMeState = {}, action) => {
+    (state = {}, action): IFollowMeState => {
         switch (action.type) {
 
         case SET_FOLLOW_ME_MODERATOR: {

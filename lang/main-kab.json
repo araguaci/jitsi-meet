@@ -73,6 +73,7 @@
         },
         "noMessagesMessage": "Ulac iznan akka tura deg temlilit. Bdu adiwenni da!",
         "privateNotice": "Izen uslig i {{recipient}}",
+        "sendButton": "Azen",
         "smileysPanel": "Afeggag n Emoji",
         "tabs": {
             "chat": "Asqerdec",
@@ -114,7 +115,6 @@
         "bridgeCount": "Amḍan n uqeddac: ",
         "codecs": "Codecs (A/V) : ",
         "connectedTo": "Yeqqen ɣer:",
-        "e2e_rtt": "E2E RTT:",
         "framerate": "Afmiḍi n ukatar:",
         "less": "Sken-d drus",
         "localaddress": "Tansa tadigant:",
@@ -385,7 +385,7 @@
         "veryGood": "Yelha maḍi"
     },
     "helpView": {
-        "header": "Agens n tallalt"
+        "title": "Agens n tallalt"
     },
     "incomingCall": {
         "answer": "Tiririt",
@@ -498,8 +498,6 @@
         "youtubeTerms": "Tiwtilin n yimeẓla n Youtube"
     },
     "lobby": {
-        "admit": "Steεref",
-        "admitAll": "Steεref s kullec",
         "allow": "Sireg",
         "backToKnockModeButton": "Ulac awal uffir, suter attekki deg ubdil-is",
         "dialogTitle": "Askar Lobby",
@@ -530,8 +528,7 @@
         "notificationTitle": "Taxxamt n uraǧu",
         "passwordField": "Sekcem awal uffir n temlilit",
         "passwordJoinButton": "Semlil",
-        "reject": "Agi",
-        "rejectAll": "Agi akk",
+        "title": "Taxxamt n uraǧu",
         "toggleLabel": "Rmed Lobby"
     },
     "localRecording": {
@@ -627,6 +624,8 @@
     },
     "participantsPane": {
         "actions": {
+            "admit": "Steεref",
+            "admitAll": "Steεref s kullec",
             "allow": "Sireg i yimttekkiyen ad:",
             "allowVideo": "Sireg tavidyut",
             "askUnmute": "Suter tririt n ṣṣut",
@@ -636,18 +635,19 @@
             "mute": "Asusam",
             "muteAll": "Sgugem meṛṛa",
             "muteEveryoneElse": "Sgugem-iten i meṛṛa",
+            "reject": "Agi",
             "stopEveryonesVideo": "Seḥbes tavidyut n yal yiwen",
             "stopVideo": "Seḥbes tavidyut n Youtube",
             "unblockEveryoneMicCamera": "Serreḥ i usawaḍ d tkamiṛat n yal yiwen",
             "videoModeration": "Bdan tavidyut-nsen"
         },
         "close": "Mdel",
-        "header": "Imttekkiyen",
         "headings": {
             "lobby": "Lobby ({{count}})",
             "participantsList": "Imttekkiyen n temlilit ({{count}})",
             "waitingLobby": "Araǧu deg lobby ({{count}})"
-        }
+        },
+        "title": "Imttekkiyen"
     },
     "passwordDigitsOnly": "Alamma d {{number}} yizwilen",
     "passwordSetRemotely": "Yettusbadu sɣur yimttekki-nniḍen",
@@ -666,6 +666,9 @@
             "questionPlaceholder": "Efk asteqsi",
             "removeOption": "Kkes aɣewwaṛ",
             "send": "Azen"
+        },
+        "errors": {
+            "notUniqueOption": "tifranin ilaq ad ilin d imaynuten"
         },
         "notification": {
             "description": "Ldi iccer n yisenqad i ufran",
@@ -791,6 +794,7 @@
         "serviceName": "Ameẓlu n usekles",
         "signIn": "Qqen",
         "signOut": "Ffeɣ",
+        "title": "Asekles",
         "unavailable": "Suref-aɣ! {{serviceName}} akka tura ulac-it. Aql-aɣ nxeddem ad nefru ugur. Ma ulac aɣilif ɛreḍ tikkelt-nniḍen ticki.",
         "unavailableTitle": "Ulac asekles",
         "uploadToCloud": "Sali ɣer usigna"
@@ -872,7 +876,8 @@
         "hours": "{{count}} isragen",
         "minutes": "{{count}} n tesdidin",
         "name": "Isem",
-        "search": "Rechercher",
+        "search": "Nadi",
+        "searchHint": "Nadi imttekkiyen",
         "seconds": "{{count}} n tsinin",
         "speakerStats": "Addad n yimsiwel",
         "speakerTime": "Akud n yimsiwel"

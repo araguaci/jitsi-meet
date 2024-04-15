@@ -1,23 +1,24 @@
 import React from 'react';
 import { Image, ImageStyle, StyleProp, ViewStyle } from 'react-native';
 import { SvgUri } from 'react-native-svg';
+import { connect } from 'react-redux';
 
-import { connect } from '../../../base/redux/functions';
+import { IReduxState } from '../../../app/types';
 
 import styles from './styles';
 
 
-interface Props {
-    uri?: any;
+interface IProps {
+    uri?: string;
 }
 
 /**
  * Component that displays a branding background image.
  *
- * @param {Props} props - The props of the component.
+ * @param {IProps} props - The props of the component.
  * @returns {ReactElement}
  */
-const BrandingImageBackground: React.FC<Props> = ({ uri }:Props) => {
+const BrandingImageBackground: React.FC<IProps> = ({ uri }: IProps) => {
     const imageType = uri?.substr(uri.lastIndexOf('/') + 1);
     const imgSrc = uri ? uri : undefined;
 
@@ -40,7 +41,7 @@ const BrandingImageBackground: React.FC<Props> = ({ uri }:Props) => {
                     // with the smallest Y value of the viewport.
                     preserveAspectRatio = 'xMinYMin'
                     style = { styles.brandingImageBackgroundSvg as StyleProp<ViewStyle> }
-                    uri = { imgSrc }
+                    uri = { imgSrc ?? null }
                     viewBox = '0 0 400 650'
                     width = '100%' />
             );
@@ -62,9 +63,9 @@ const BrandingImageBackground: React.FC<Props> = ({ uri }:Props) => {
  *
  * @param {Object} state - The Redux state.
  * @private
- * @returns {Props}
+ * @returns {IProps}
  */
-function _mapStateToProps(state: any) {
+function _mapStateToProps(state: IReduxState) {
     const { backgroundImageUrl } = state['features/dynamic-branding'];
 
     return {

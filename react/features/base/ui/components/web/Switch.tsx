@@ -1,33 +1,20 @@
-import { makeStyles } from '@material-ui/core';
-import clsx from 'clsx';
 import React, { useCallback } from 'react';
+import { makeStyles } from 'tss-react/mui';
 
 import { isMobileBrowser } from '../../../environment/utils';
+import { ISwitchProps } from '../types';
 
-interface SwitchProps {
+interface IProps extends ISwitchProps {
 
-    /**
-     * Whether or not the toggle is on.
-     */
-    checked: boolean;
-
-    /**
-     * Whether or not the toggle is disabled.
-     */
-    disabled?: boolean;
+    className?: string;
 
     /**
      * Id of the toggle.
      */
     id?: string;
-
-    /**
-     * Toggle change callback.
-     */
-    onChange: (on?: boolean) => void;
 }
 
-const useStyles = makeStyles((theme: any) => {
+const useStyles = makeStyles()(theme => {
     return {
         container: {
             position: 'relative',
@@ -65,6 +52,7 @@ const useStyles = makeStyles((theme: any) => {
             width: '16px',
             height: '16px',
             position: 'absolute',
+            zIndex: 5,
             top: '4px',
             left: '4px',
             backgroundColor: theme.palette.ui10,
@@ -86,32 +74,65 @@ const useStyles = makeStyles((theme: any) => {
         },
 
         checkbox: {
-            height: 0,
-            width: 0
+            position: 'absolute',
+            zIndex: 10,
+            cursor: 'pointer',
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
+            opacity: 0,
+
+            '&.focus-visible + .toggle-checkbox-ring': {
+                outline: 0,
+                boxShadow: `0px 0px 0px 2px ${theme.palette.focus01}`
+            }
+        },
+
+        checkboxRing: {
+            position: 'absolute',
+            pointerEvents: 'none',
+            zIndex: 6,
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
+            borderRadius: '12px',
+
+            '&.is-mobile': {
+                borderRadius: '32px'
+            }
         }
     };
 });
 
-const Switch = ({ id, checked, disabled, onChange }: SwitchProps) => {
-    const styles = useStyles();
+const Switch = ({ className, id, checked, disabled, onChange }: IProps) => {
+    const { classes: styles, cx } = useStyles();
     const isMobile = isMobileBrowser();
 
     const change = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         onChange(e.target.checked);
     }, []);
 
-    return (<label
-        className = { clsx('toggle-container', styles.container, checked && styles.containerOn,
-            isMobile && 'is-mobile', disabled && 'disabled') }>
-        <input
-            type = 'checkbox'
-            { ...(id ? { id } : {}) }
-            checked = { checked }
-            className = { styles.checkbox }
-            disabled = { disabled }
-            onChange = { change } />
-        <div className = { clsx('toggle', styles.toggle, checked && styles.toggleOn, isMobile && 'is-mobile') } />
-    </label>);
+    return (
+        <span
+            className = { cx('toggle-container', styles.container, checked && styles.containerOn,
+                isMobile && 'is-mobile', disabled && 'disabled', className) }>
+            <input
+                type = 'checkbox'
+                { ...(id ? { id } : {}) }
+                checked = { checked }
+                className = { styles.checkbox }
+                disabled = { disabled }
+                onChange = { change } />
+            <div className = { cx('toggle-checkbox-ring', styles.checkboxRing, isMobile && 'is-mobile') } />
+            <div className = { cx('toggle', styles.toggle, checked && styles.toggleOn, isMobile && 'is-mobile') } />
+        </span>
+    );
 };
 
 export default Switch;

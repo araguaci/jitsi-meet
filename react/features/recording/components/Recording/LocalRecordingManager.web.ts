@@ -1,55 +1,41 @@
-/* eslint-disable import/order */
-
+import i18next from 'i18next';
 import { v4 as uuidV4 } from 'uuid';
 import fixWebmDuration from 'webm-duration-fix';
 
 import { IStore } from '../../../app/types';
-
-// @ts-ignore
-import { getRoomName } from '../../../base/conference';
-
-// @ts-ignore
-import { MEDIA_TYPE } from '../../../base/media';
-
-// @ts-ignore
-import { getTrackState, getLocalTrack } from '../../../base/tracks';
+import { getRoomName } from '../../../base/conference/functions';
+import { MEDIA_TYPE } from '../../../base/media/constants';
+import { getLocalTrack, getTrackState } from '../../../base/tracks/functions';
 import { inIframe } from '../../../base/util/iframeUtils';
-
-// @ts-ignore
 import { stopLocalVideoRecording } from '../../actions.any';
 
-declare let APP: any;
-
-interface SelfRecording {
+interface ISelfRecording {
     on: boolean;
     withVideo: boolean;
 }
 
 interface ILocalRecordingManager {
     addAudioTrackToLocalRecording: (track: MediaStreamTrack) => void;
-    audioContext: AudioContext|undefined;
-    audioDestination: MediaStreamAudioDestinationNode|undefined;
+    audioContext: AudioContext | undefined;
+    audioDestination: MediaStreamAudioDestinationNode | undefined;
     getFilename: () => string;
     initializeAudioMixer: () => void;
     isRecordingLocally: () => boolean;
     mediaType: string;
     mixAudioStream: (stream: MediaStream) => void;
-    recorder: MediaRecorder|undefined;
+    recorder: MediaRecorder | undefined;
     recordingData: Blob[];
     roomName: string;
     saveRecording: (recordingData: Blob[], filename: string) => void;
-    selfRecording: SelfRecording;
+    selfRecording: ISelfRecording;
     startLocalRecording: (store: IStore, onlySelf: boolean) => void;
     stopLocalRecording: () => void;
-    stream: MediaStream|undefined;
+    stream: MediaStream | undefined;
     totalSize: number;
 }
 
 const getMimeType = (): string => {
     const possibleTypes = [
-        'video/mp4;codecs=h264',
-        'video/webm;codecs=h264',
-        'video/webm;codecs=vp9',
         'video/webm;codecs=vp8'
     ];
 
@@ -62,6 +48,7 @@ const getMimeType = (): string => {
 };
 
 const VIDEO_BIT_RATE = 2500000; // 2.5Mbps in bits
+const MAX_SIZE = 1073741824; // 1GB in bytes
 
 // Lazily initialize.
 let preferredMediaType: string;
@@ -73,13 +60,16 @@ const LocalRecordingManager: ILocalRecordingManager = {
     audioContext: undefined,
     audioDestination: undefined,
     roomName: '',
-    totalSize: 1073741824, // 1GB in bytes
+    totalSize: MAX_SIZE,
     selfRecording: {
         on: false,
         withVideo: false
     },
 
     get mediaType() {
+        if (this.selfRecording.on && !this.selfRecording.withVideo) {
+            return 'audio/webm;';
+        }
         if (!preferredMediaType) {
             preferredMediaType = getMimeType();
         }
@@ -148,9 +138,7 @@ const LocalRecordingManager: ILocalRecordingManager = {
     async saveRecording(recordingData, filename) {
         // @ts-ignore
         const blob = await fixWebmDuration(new Blob(recordingData, { type: this.mediaType }));
-
-        // @ts-ignore
-        const url = window.URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
 
         const extension = this.mediaType.slice(this.mediaType.indexOf('/') + 1, this.mediaType.indexOf(';'));
@@ -172,7 +160,12 @@ const LocalRecordingManager: ILocalRecordingManager = {
             this.recorder = undefined;
             this.audioContext = undefined;
             this.audioDestination = undefined;
-            setTimeout(() => this.saveRecording(this.recordingData, this.getFilename()), 1000);
+            this.totalSize = MAX_SIZE;
+            setTimeout(() => {
+                if (this.recordingData.length > 0) {
+                    this.saveRecording(this.recordingData, this.getFilename());
+                }
+            }, 1000);
         }
     },
 
@@ -192,7 +185,7 @@ const LocalRecordingManager: ILocalRecordingManager = {
 
         this.selfRecording.on = onlySelf;
         this.recordingData = [];
-        this.roomName = getRoomName(getState());
+        this.roomName = getRoomName(getState()) ?? '';
         let gdmStream: MediaStream = new MediaStream();
         const tracks = getTrackState(getState());
 
@@ -228,21 +221,36 @@ const LocalRecordingManager: ILocalRecordingManager = {
                     permittedOrigins: [ '*' ]
                 });
             }
+            const localAudioTrack = getLocalTrack(tracks, MEDIA_TYPE.AUDIO)?.jitsiTrack?.track;
+
+            // Starting chrome 107, the recorder does not record any data if the audio stream has no tracks
+            // To fix this we create a track for the local user(muted track)
+            if (!localAudioTrack) {
+                APP.conference.muteAudio(false);
+                setTimeout(() => APP.conference.muteAudio(true), 100);
+                await new Promise(resolve => {
+                    setTimeout(resolve, 100);
+                });
+            }
+
+            // handle no mic permission
+            if (!getLocalTrack(getTrackState(getState()), MEDIA_TYPE.AUDIO)?.jitsiTrack?.track) {
+                throw new Error('NoMicTrack');
+            }
+
+            const currentTitle = document.title;
+
+            document.title = i18next.t('localRecording.selectTabTitle');
 
             // @ts-ignore
             gdmStream = await navigator.mediaDevices.getDisplayMedia({
-                // @ts-ignore
                 video: { displaySurface: 'browser',
                     frameRate: 30 },
-                audio: {
-                    autoGainControl: false,
-                    channelCount: 2,
-                    echoCancellation: false,
-                    noiseSuppression: false
-                }
+                audio: false, // @ts-ignore
+                preferCurrentTab: true
             });
+            document.title = currentTitle;
 
-            // @ts-ignore
             const isBrowser = gdmStream.getVideoTracks()[0].getSettings().displaySurface === 'browser';
 
             if (!isBrowser || (supportsCaptureHandle // @ts-ignore
@@ -252,9 +260,10 @@ const LocalRecordingManager: ILocalRecordingManager = {
             }
 
             this.initializeAudioMixer();
-            this.mixAudioStream(gdmStream);
 
-            tracks.forEach((track: any) => {
+            const allTracks = getTrackState(getState());
+
+            allTracks.forEach((track: any) => {
                 if (track.mediaType === MEDIA_TYPE.AUDIO) {
                     const audioTrack = track?.jitsiTrack?.track;
 
@@ -276,7 +285,7 @@ const LocalRecordingManager: ILocalRecordingManager = {
                 this.recordingData.push(e.data);
                 this.totalSize -= e.data.size;
                 if (this.totalSize <= 0) {
-                    this.stopLocalRecording();
+                    dispatch(stopLocalVideoRecording());
                 }
             }
         });

@@ -1,7 +1,6 @@
-/* eslint-disable lines-around-comment */
-import {
-    SCREEN_SHARE_REMOTE_PARTICIPANTS_UPDATED
-} from '../../video-layout/actionTypes';
+import { AnyAction } from 'redux';
+
+import { MEDIA_TYPE } from '../media/constants';
 import ReducerRegistry from '../redux/ReducerRegistry';
 import { set } from '../redux/functions';
 
@@ -11,15 +10,22 @@ import {
     PARTICIPANT_ID_CHANGED,
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
+    PARTICIPANT_SOURCES_UPDATED,
     PARTICIPANT_UPDATED,
     PIN_PARTICIPANT,
+    RAISE_HAND_CLEAR,
     RAISE_HAND_UPDATED,
     SCREENSHARE_PARTICIPANT_NAME_CHANGED,
     SET_LOADABLE_AVATAR_URL
 } from './actionTypes';
 import { LOCAL_PARTICIPANT_DEFAULT_ID, PARTICIPANT_ROLE } from './constants';
-// @ts-ignore
-import { isParticipantModerator } from './functions';
+import {
+    isLocalScreenshareParticipant,
+    isParticipantModerator,
+    isRemoteScreenshareParticipant,
+    isScreenShareParticipant
+} from './functions';
+import { FakeParticipant, ILocalParticipant, IParticipant, ISourceInfo } from './types';
 
 /**
  * Participant object.
@@ -37,45 +43,6 @@ import { isParticipantModerator } from './functions';
  * {@code false}.
  * @property {string} email - Participant email.
  */
-
-export interface Participant {
-    avatarURL?: string;
-    botType?: string;
-    conference?: Object;
-    connectionStatus?: string;
-    dominantSpeaker?: boolean;
-    e2eeSupported?: boolean;
-    email?: string;
-    features?: {
-        'screen-sharing'?: boolean;
-    };
-    id: string;
-    isFakeParticipant?: boolean;
-    isJigasi?: boolean;
-    isLocalScreenShare?: boolean;
-    isReplacing?: number;
-    isVirtualScreenshareParticipant?: boolean;
-    loadableAvatarUrl?: string;
-    loadableAvatarUrlUseCORS?: boolean;
-    local?: boolean;
-    name?: string;
-    pinned?: boolean;
-    presence?: string;
-    raisedHandTimestamp?: number;
-    remoteControlSessionStatus?: boolean;
-    role?: string;
-    supportsRemoteControl?: boolean;
-}
-
-export interface LocalParticipant extends Participant {
-    audioOutputDeviceId?: string;
-    cameraDeviceId?: string;
-    micDeviceId?: string;
-    startWithAudioMuted?: boolean;
-    startWithVideoMuted?: boolean;
-    userSelectedMicDeviceId?: string;
-    userSelectedMicDeviceLabel?: string;
-}
 
 /**
  * The participant properties which cannot be updated through
@@ -99,34 +66,36 @@ const PARTICIPANT_PROPS_TO_OMIT_WHEN_UPDATE = [
 
 const DEFAULT_STATE = {
     dominantSpeaker: undefined,
-    everyoneIsModerator: false,
     fakeParticipants: new Map(),
-    haveParticipantWithScreenSharingFeature: false,
     local: undefined,
     localScreenShare: undefined,
+    numberOfNonModeratorParticipants: 0,
+    numberOfParticipantsDisabledE2EE: 0,
+    numberOfParticipantsNotSupportingE2EE: 0,
     overwrittenNameList: {},
     pinnedParticipant: undefined,
     raisedHandsQueue: [],
     remote: new Map(),
+    remoteVideoSources: new Set<string>(),
     sortedRemoteVirtualScreenshareParticipants: new Map(),
     sortedRemoteParticipants: new Map(),
-    sortedRemoteScreenshares: new Map(),
     speakersList: new Map()
 };
 
 export interface IParticipantsState {
     dominantSpeaker?: string;
-    everyoneIsModerator: boolean;
-    fakeParticipants: Map<string, Participant>;
-    haveParticipantWithScreenSharingFeature: boolean;
-    local?: LocalParticipant;
-    localScreenShare?: Participant;
-    overwrittenNameList: Object;
+    fakeParticipants: Map<string, IParticipant>;
+    local?: ILocalParticipant;
+    localScreenShare?: IParticipant;
+    numberOfNonModeratorParticipants: number;
+    numberOfParticipantsDisabledE2EE: number;
+    numberOfParticipantsNotSupportingE2EE: number;
+    overwrittenNameList: { [id: string]: string; };
     pinnedParticipant?: string;
-    raisedHandsQueue: Array<{ id: string; raisedHandTimestamp: number;}>;
-    remote: Map<string, Participant>;
+    raisedHandsQueue: Array<{ id: string; raisedHandTimestamp: number; }>;
+    remote: Map<string, IParticipant>;
+    remoteVideoSources: Set<string>;
     sortedRemoteParticipants: Map<string, string>;
-    sortedRemoteScreenshares: Map<string, string>;
     sortedRemoteVirtualScreenshareParticipants: Map<string, string>;
     speakersList: Map<string, string>;
 }
@@ -135,14 +104,15 @@ export interface IParticipantsState {
  * Listen for actions which add, remove, or update the set of participants in
  * the conference.
  *
- * @param {Participant[]} state - List of participants to be modified.
+ * @param {IParticipant[]} state - List of participants to be modified.
  * @param {Object} action - Action object.
  * @param {string} action.type - Type of action.
- * @param {Participant} action.participant - Information about participant to be
+ * @param {IParticipant} action.participant - Information about participant to be
  * added/removed/modified.
- * @returns {Participant[]}
+ * @returns {IParticipant[]}
  */
-ReducerRegistry.register('features/base/participants', (state: IParticipantsState = DEFAULT_STATE, action) => {
+ReducerRegistry.register<IParticipantsState>('features/base/participants',
+(state = DEFAULT_STATE, action): IParticipantsState => {
     switch (action.type) {
     case PARTICIPANT_ID_CHANGED: {
         const { local } = state;
@@ -236,32 +206,31 @@ ReducerRegistry.register('features/base/participants', (state: IParticipantsStat
             id = LOCAL_PARTICIPANT_DEFAULT_ID;
         }
 
-        let newParticipant: Participant|null = null;
+        let newParticipant: IParticipant | null = null;
+        const oldParticipant = local || state.local?.id === id ? state.local : state.remote.get(id);
 
         if (state.remote.has(id)) {
-            newParticipant = _participant(state.remote.get(id), action);
+            newParticipant = _participant(oldParticipant, action);
             state.remote.set(id, newParticipant);
         } else if (id === state.local?.id) {
             newParticipant = state.local = _participant(state.local, action);
         }
 
-        if (newParticipant) {
-
-            // everyoneIsModerator calculation:
+        if (oldParticipant && newParticipant && !newParticipant.fakeParticipant) {
             const isModerator = isParticipantModerator(newParticipant);
 
-            if (state.everyoneIsModerator && !isModerator) {
-                state.everyoneIsModerator = false;
-            } else if (!state.everyoneIsModerator && isModerator) {
-                state.everyoneIsModerator = _isEveryoneModerator(state);
+            if (isParticipantModerator(oldParticipant) !== isModerator) {
+                state.numberOfNonModeratorParticipants += isModerator ? -1 : 1;
             }
 
-            // haveParticipantWithScreenSharingFeature calculation:
-            const { features = {} } = participant;
+            const e2eeEnabled = Boolean(newParticipant.e2eeEnabled);
+            const e2eeSupported = Boolean(newParticipant.e2eeSupported);
 
-            // Currently we use only PARTICIPANT_UPDATED to set a feature to enabled and we never disable it.
-            if (String(features['screen-sharing']) === 'true') {
-                state.haveParticipantWithScreenSharingFeature = true;
+            if (Boolean(oldParticipant.e2eeEnabled) !== e2eeEnabled) {
+                state.numberOfParticipantsDisabledE2EE += e2eeEnabled ? -1 : 1;
+            }
+            if (!local && Boolean(oldParticipant.e2eeSupported) !== e2eeSupported) {
+                state.numberOfParticipantsNotSupportingE2EE += e2eeSupported ? -1 : 1;
             }
         }
 
@@ -289,12 +258,11 @@ ReducerRegistry.register('features/base/participants', (state: IParticipantsStat
     case PARTICIPANT_JOINED: {
         const participant = _participantJoined(action);
         const {
+            fakeParticipant,
             id,
-            isFakeParticipant,
-            isLocalScreenShare,
-            isVirtualScreenshareParticipant,
             name,
-            pinned
+            pinned,
+            sources
         } = participant;
         const { pinnedParticipant, dominantSpeaker } = state;
 
@@ -313,13 +281,22 @@ ReducerRegistry.register('features/base/participants', (state: IParticipantsStat
             state.dominantSpeaker = id;
         }
 
-        const isModerator = isParticipantModerator(participant);
-        const { local, remote } = state;
+        if (!fakeParticipant) {
+            const isModerator = isParticipantModerator(participant);
 
-        if (state.everyoneIsModerator && !isModerator) {
-            state.everyoneIsModerator = false;
-        } else if (!local && remote.size === 0 && isModerator) {
-            state.everyoneIsModerator = true;
+            if (!isModerator) {
+                state.numberOfNonModeratorParticipants += 1;
+            }
+
+            const { e2eeEnabled, e2eeSupported } = participant as IParticipant;
+
+            if (!e2eeEnabled) {
+                state.numberOfParticipantsDisabledE2EE += 1;
+            }
+
+            if (!participant.local && !e2eeSupported) {
+                state.numberOfParticipantsNotSupportingE2EE += 1;
+            }
         }
 
         if (participant.local) {
@@ -329,7 +306,7 @@ ReducerRegistry.register('features/base/participants', (state: IParticipantsStat
             };
         }
 
-        if (isLocalScreenShare) {
+        if (isLocalScreenshareParticipant(participant)) {
             return {
                 ...state,
                 localScreenShare: participant
@@ -337,6 +314,19 @@ ReducerRegistry.register('features/base/participants', (state: IParticipantsStat
         }
 
         state.remote.set(id, participant);
+
+        if (sources?.size) {
+            const videoSources: Map<string, ISourceInfo> | undefined = sources.get(MEDIA_TYPE.VIDEO);
+
+            if (videoSources?.size) {
+                const newRemoteVideoSources = new Set(state.remoteVideoSources);
+
+                for (const source of videoSources.keys()) {
+                    newRemoteVideoSources.add(source);
+                }
+                state.remoteVideoSources = newRemoteVideoSources;
+            }
+        }
 
         // Insert the new participant.
         const displayName = _getDisplayName(state, name);
@@ -348,7 +338,7 @@ ReducerRegistry.register('features/base/participants', (state: IParticipantsStat
         // The sort order of participants is preserved since Map remembers the original insertion order of the keys.
         state.sortedRemoteParticipants = new Map(sortedRemoteParticipants);
 
-        if (isVirtualScreenshareParticipant) {
+        if (isRemoteScreenshareParticipant(participant)) {
             const sortedRemoteVirtualScreenshareParticipants = [ ...state.sortedRemoteVirtualScreenshareParticipants ];
 
             sortedRemoteVirtualScreenshareParticipants.push([ id, name ?? '' ]);
@@ -356,7 +346,9 @@ ReducerRegistry.register('features/base/participants', (state: IParticipantsStat
 
             state.sortedRemoteVirtualScreenshareParticipants = new Map(sortedRemoteVirtualScreenshareParticipants);
         }
-        if (isFakeParticipant) {
+
+        // Exclude the screenshare participant from the fake participant count to avoid duplicates.
+        if (fakeParticipant && !isScreenShareParticipant(participant)) {
             state.fakeParticipants.set(id, participant);
         }
 
@@ -380,6 +372,7 @@ ReducerRegistry.register('features/base/participants', (state: IParticipantsStat
             pinnedParticipant
         } = state;
         let oldParticipant = remote.get(id);
+        let isLocalScreenShare = false;
 
         if (oldParticipant && oldParticipant.conference === conference) {
             remote.delete(id);
@@ -387,6 +380,7 @@ ReducerRegistry.register('features/base/participants', (state: IParticipantsStat
             oldParticipant = state.local;
             delete state.local;
         } else if (localScreenShare?.id === id) {
+            isLocalScreenShare = true;
             oldParticipant = state.local;
             delete state.localScreenShare;
         } else {
@@ -394,32 +388,28 @@ ReducerRegistry.register('features/base/participants', (state: IParticipantsStat
             return state;
         }
 
-        state.sortedRemoteParticipants.delete(id);
-        state.raisedHandsQueue = state.raisedHandsQueue.filter(pid => pid.id !== id);
+        if (oldParticipant?.sources?.size) {
+            const videoSources: Map<string, ISourceInfo> | undefined = oldParticipant.sources.get(MEDIA_TYPE.VIDEO);
 
-        if (!state.everyoneIsModerator && !isParticipantModerator(oldParticipant)) {
-            state.everyoneIsModerator = _isEveryoneModerator(state);
-        }
+            if (videoSources?.size) {
+                const newRemoteVideoSources = new Set(state.remoteVideoSources);
 
-        const { features = {} } = oldParticipant || {};
-
-        if (state.haveParticipantWithScreenSharingFeature && String(features['screen-sharing']) === 'true') {
-            const { features: localFeatures = {} } = state.local || {};
-
-            if (String(localFeatures['screen-sharing']) !== 'true') {
-                state.haveParticipantWithScreenSharingFeature = false;
-
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                for (const [ key, participant ] of state.remote) {
-                    const { features: f = {} } = participant;
-
-                    if (String(f['screen-sharing']) === 'true') {
-                        state.haveParticipantWithScreenSharingFeature = true;
-                        break;
-                    }
+                for (const source of videoSources.keys()) {
+                    newRemoteVideoSources.delete(source);
                 }
+
+                state.remoteVideoSources = newRemoteVideoSources;
+            }
+        } else if (oldParticipant?.fakeParticipant === FakeParticipant.RemoteScreenShare) {
+            const newRemoteVideoSources = new Set(state.remoteVideoSources);
+
+            if (newRemoteVideoSources.delete(id)) {
+                state.remoteVideoSources = newRemoteVideoSources;
             }
         }
+
+        state.sortedRemoteParticipants.delete(id);
+        state.raisedHandsQueue = state.raisedHandsQueue.filter(pid => pid.id !== id);
 
         if (dominantSpeaker === id) {
             state.dominantSpeaker = undefined;
@@ -441,35 +431,55 @@ ReducerRegistry.register('features/base/participants', (state: IParticipantsStat
             state.sortedRemoteVirtualScreenshareParticipants = new Map(sortedRemoteVirtualScreenshareParticipants);
         }
 
+        if (oldParticipant && !oldParticipant.fakeParticipant && !isLocalScreenShare) {
+            const { e2eeEnabled, e2eeSupported } = oldParticipant;
+
+            if (!isParticipantModerator(oldParticipant)) {
+                state.numberOfNonModeratorParticipants -= 1;
+            }
+
+            if (!e2eeEnabled) {
+                state.numberOfParticipantsDisabledE2EE -= 1;
+            }
+
+            if (!oldParticipant.local && !e2eeSupported) {
+                state.numberOfParticipantsNotSupportingE2EE -= 1;
+            }
+        }
+
         return { ...state };
+    }
+    case PARTICIPANT_SOURCES_UPDATED: {
+        const { id, sources } = action.participant;
+        const participant = state.remote.get(id);
+
+        if (participant) {
+            participant.sources = sources;
+            const videoSources: Map<string, ISourceInfo> = sources.get(MEDIA_TYPE.VIDEO);
+
+            if (videoSources?.size) {
+                const newRemoteVideoSources = new Set(state.remoteVideoSources);
+
+                for (const source of videoSources.keys()) {
+                    newRemoteVideoSources.add(source);
+                }
+                state.remoteVideoSources = newRemoteVideoSources;
+            }
+        }
+
+        return { ...state };
+    }
+    case RAISE_HAND_CLEAR: {
+        return {
+            ...state,
+            raisedHandsQueue: []
+        };
     }
     case RAISE_HAND_UPDATED: {
         return {
             ...state,
             raisedHandsQueue: action.queue
         };
-    }
-    case SCREEN_SHARE_REMOTE_PARTICIPANTS_UPDATED: {
-        const { participantIds } = action;
-        const sortedSharesList = [];
-
-        for (const participant of participantIds) {
-            const remoteParticipant = state.remote.get(participant);
-
-            if (remoteParticipant) {
-                const displayName
-                    = _getDisplayName(state, remoteParticipant.name);
-
-                sortedSharesList.push([ participant, displayName ]);
-            }
-        }
-
-        // Keep the remote screen share list sorted alphabetically.
-        sortedSharesList.length && sortedSharesList.sort((a, b) => a[1].localeCompare(b[1]));
-        // @ts-ignore
-        state.sortedRemoteScreenshares = new Map(sortedSharesList);
-
-        return { ...state };
     }
     case OVERWRITE_PARTICIPANT_NAME: {
         const { id, name } = action;
@@ -502,41 +512,19 @@ function _getDisplayName(state: Object, name?: string): string {
 }
 
 /**
- * Loops through the participants in the state in order to check if all participants are moderators.
- *
- * @param {Object} state - The local participant redux state.
- * @returns {boolean}
- */
-function _isEveryoneModerator(state: IParticipantsState) {
-    if (isParticipantModerator(state.local)) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        for (const [ k, p ] of state.remote) {
-            if (!isParticipantModerator(p)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    return false;
-}
-
-/**
  * Reducer function for a single participant.
  *
- * @param {Participant|undefined} state - Participant to be modified.
+ * @param {IParticipant|undefined} state - Participant to be modified.
  * @param {Object} action - Action object.
  * @param {string} action.type - Type of action.
- * @param {Participant} action.participant - Information about participant to be
+ * @param {IParticipant} action.participant - Information about participant to be
  * added/modified.
  * @param {JitsiConference} action.conference - Conference instance.
  * @private
- * @returns {Participant}
+ * @returns {IParticipant}
  */
-function _participant(state: Participant|LocalParticipant = {
-    id: '',
-    name: '' }, action: any): Participant|LocalParticipant {
+function _participant(state: IParticipant | ILocalParticipant = { id: '' },
+        action: AnyAction): IParticipant | ILocalParticipant {
     switch (action.type) {
     case SET_LOADABLE_AVATAR_URL:
     case PARTICIPANT_UPDATED: {
@@ -572,24 +560,21 @@ function _participant(state: Participant|LocalParticipant = {
  * base/participants after the reduction of the specified
  * {@code action}.
  */
-function _participantJoined({ participant }: {participant: Participant}) {
+function _participantJoined({ participant }: { participant: IParticipant; }) {
     const {
         avatarURL,
         botType,
-        connectionStatus,
         dominantSpeaker,
         email,
-        isFakeParticipant,
-        isVirtualScreenshareParticipant,
-        isLocalScreenShare,
+        fakeParticipant,
         isReplacing,
-        isJigasi,
         loadableAvatarUrl,
         local,
         name,
         pinned,
         presence,
-        role
+        role,
+        sources
     } = participant;
     let { conference, id } = participant;
 
@@ -609,21 +594,18 @@ function _participantJoined({ participant }: {participant: Participant}) {
         avatarURL,
         botType,
         conference,
-        connectionStatus,
         dominantSpeaker: dominantSpeaker || false,
         email,
+        fakeParticipant,
         id,
-        isFakeParticipant,
-        isVirtualScreenshareParticipant,
-        isLocalScreenShare,
         isReplacing,
-        isJigasi,
         loadableAvatarUrl,
         local: local || false,
         name,
         pinned: pinned || false,
         presence,
-        role: role || PARTICIPANT_ROLE.NONE
+        role: role || PARTICIPANT_ROLE.NONE,
+        sources
     };
 }
 
@@ -643,18 +625,18 @@ function _updateParticipantProperty(state: IParticipantsState, id: string, prope
         remote.set(id, set(remote.get(id) ?? {
             id: '',
             name: ''
-        }, property as keyof Participant, value));
+        }, property as keyof IParticipant, value));
 
         return true;
     } else if (local?.id === id || local?.id === 'local') {
         // The local participant's ID can chance from something to "local" when
         // not in a conference.
-        state.local = set(local, property as keyof LocalParticipant, value);
+        state.local = set(local, property as keyof ILocalParticipant, value);
 
         return true;
 
     } else if (localScreenShare?.id === id) {
-        state.localScreenShare = set(localScreenShare, property as keyof Participant, value);
+        state.localScreenShare = set(localScreenShare, property as keyof IParticipant, value);
 
         return true;
     }

@@ -1,26 +1,28 @@
-import { Dispatch } from 'redux';
-
-// @ts-ignore
-import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../../notifications';
+import { IStore } from '../../app/types';
+import { showNotification } from '../../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
+import { IJitsiConference } from '../conference/reducer';
 import { set } from '../redux/functions';
 
 import {
     DOMINANT_SPEAKER_CHANGED,
+    GRANT_MODERATOR,
     HIDDEN_PARTICIPANT_JOINED,
     HIDDEN_PARTICIPANT_LEFT,
-    GRANT_MODERATOR,
     KICK_PARTICIPANT,
     LOCAL_PARTICIPANT_AUDIO_LEVEL_CHANGED,
     LOCAL_PARTICIPANT_RAISE_HAND,
     MUTE_REMOTE_PARTICIPANT,
-    OVERWRITE_PARTICIPANT_NAME,
     OVERWRITE_PARTICIPANTS_NAMES,
+    OVERWRITE_PARTICIPANT_NAME,
     PARTICIPANT_ID_CHANGED,
     PARTICIPANT_JOINED,
     PARTICIPANT_KICKED,
     PARTICIPANT_LEFT,
+    PARTICIPANT_SOURCES_UPDATED,
     PARTICIPANT_UPDATED,
     PIN_PARTICIPANT,
+    RAISE_HAND_CLEAR,
     RAISE_HAND_UPDATED,
     SCREENSHARE_PARTICIPANT_NAME_CHANGED,
     SET_LOADABLE_AVATAR_URL,
@@ -31,19 +33,20 @@ import {
 } from './constants';
 import {
     getLocalParticipant,
-    getVirtualScreenshareParticipantOwnerId,
     getNormalizedDisplayName,
+    getParticipantById,
     getParticipantDisplayName,
-    getParticipantById
+    getVirtualScreenshareParticipantOwnerId
 } from './functions';
 import logger from './logger';
-import { Participant } from './reducer';
+import { FakeParticipant, IJitsiParticipant, IParticipant } from './types';
 
 /**
  * Create an action for when dominant speaker changes.
  *
  * @param {string} dominantSpeaker - Participant ID of the dominant speaker.
  * @param {Array<string>} previousSpeakers - Participant IDs of the previous speakers.
+ * @param {boolean} silence - Whether the dominant speaker is silent or not.
  * @param {JitsiConference} conference - The {@code JitsiConference} associated
  * with the participant identified by the specified {@code id}. Only the local
  * participant is allowed to not specify an associated {@code JitsiConference}
@@ -53,17 +56,20 @@ import { Participant } from './reducer';
  *     participant: {
  *         conference: JitsiConference,
  *         id: string,
- *         previousSpeakers: Array<string>
+ *         previousSpeakers: Array<string>,
+ *         silence: boolean
  *     }
  * }}
  */
-export function dominantSpeakerChanged(dominantSpeaker: string, previousSpeakers: string[], conference: any) {
+export function dominantSpeakerChanged(
+        dominantSpeaker: string, previousSpeakers: string[], silence: boolean, conference: IJitsiConference) {
     return {
         type: DOMINANT_SPEAKER_CHANGED,
         participant: {
             conference,
             id: dominantSpeaker,
-            previousSpeakers
+            previousSpeakers,
+            silence
         }
     };
 }
@@ -101,27 +107,6 @@ export function kickParticipant(id: string) {
 }
 
 /**
- * Creates an action to signal the connection status of the local participant
- * has changed.
- *
- * @param {string} connectionStatus - The current connection status of the local
- * participant, as enumerated by the library's participantConnectionStatus
- * constants.
- * @returns {Function}
- */
-export function localParticipantConnectionStatusChanged(connectionStatus: string) {
-    return (dispatch: Dispatch, getState: Function) => {
-        const participant = getLocalParticipant(getState);
-
-        if (participant) {
-            return dispatch(participantConnectionStatusChanged(
-                participant.id,
-                connectionStatus));
-        }
-    };
-}
-
-/**
  * Action to signal that the ID of local participant has changed. It happens
  * when the local participant joins a new conference or leaves an existing
  * conference.
@@ -130,7 +115,7 @@ export function localParticipantConnectionStatusChanged(connectionStatus: string
  * @returns {Function}
  */
 export function localParticipantIdChanged(id: string) {
-    return (dispatch: Dispatch, getState: Function) => {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const participant = getLocalParticipant(getState);
 
         if (participant) {
@@ -150,13 +135,13 @@ export function localParticipantIdChanged(id: string) {
 /**
  * Action to signal that a local participant has joined.
  *
- * @param {Participant} participant={} - Information about participant.
+ * @param {IParticipant} participant={} - Information about participant.
  * @returns {{
  *     type: PARTICIPANT_JOINED,
- *     participant: Participant
+ *     participant: IParticipant
  * }}
  */
-export function localParticipantJoined(participant: Participant = { id: '' }) {
+export function localParticipantJoined(participant: IParticipant = { id: '' }) {
     return participantJoined(set(participant, 'local', true));
 }
 
@@ -166,7 +151,7 @@ export function localParticipantJoined(participant: Participant = { id: '' }) {
  * @returns {Function}
  */
 export function localParticipantLeft() {
-    return (dispatch: Dispatch, getState: Function) => {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const participant = getLocalParticipant(getState);
 
         if (participant) {
@@ -196,7 +181,7 @@ export function localParticipantLeft() {
  * @returns {Function}
  */
 export function localParticipantRoleChanged(role: string) {
-    return (dispatch: Dispatch, getState: Function) => {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const participant = getLocalParticipant(getState);
 
         if (participant) {
@@ -225,39 +210,15 @@ export function muteRemoteParticipant(id: string, mediaType: string) {
 }
 
 /**
- * Action to update a participant's connection status.
- *
- * @param {string} id - Participant's ID.
- * @param {string} connectionStatus - The new connection status of the
- * participant.
- * @returns {{
- *     type: PARTICIPANT_UPDATED,
- *     participant: {
- *         connectionStatus: string,
- *         id: string
- *     }
- * }}
- */
-export function participantConnectionStatusChanged(id: string, connectionStatus: string) {
-    return {
-        type: PARTICIPANT_UPDATED,
-        participant: {
-            connectionStatus,
-            id
-        }
-    };
-}
-
-/**
  * Action to signal that a participant has joined.
  *
- * @param {Participant} participant - Information about participant.
+ * @param {IParticipant} participant - Information about participant.
  * @returns {{
  *     type: PARTICIPANT_JOINED,
- *     participant: Participant
+ *     participant: IParticipant
  * }}
  */
-export function participantJoined(participant: Participant) {
+export function participantJoined(participant: IParticipant) {
     // Only the local participant is not identified with an id-conference pair.
     if (participant.local) {
         return {
@@ -275,7 +236,7 @@ export function participantJoined(participant: Participant) {
             'A remote participant must be associated with a JitsiConference!');
     }
 
-    return (dispatch: Dispatch, getState: Function) => {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         // A remote participant is only expected to join in a joined or joining
         // conference. The following check is really necessary because a
         // JitsiConference may have moved into leaving but may still manage to
@@ -296,16 +257,49 @@ export function participantJoined(participant: Participant) {
 }
 
 /**
+ * Updates the sources of a remote participant.
+ *
+ * @param {IJitsiParticipant} jitsiParticipant - The IJitsiParticipant instance.
+ * @returns {{
+ *      type: PARTICIPANT_SOURCES_UPDATED,
+ *      participant: IParticipant
+ * }}
+ */
+export function participantSourcesUpdated(jitsiParticipant: IJitsiParticipant) {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+        const id = jitsiParticipant.getId();
+        const participant = getParticipantById(getState(), id);
+
+        if (participant?.local) {
+            return;
+        }
+        const sources = jitsiParticipant.getSources();
+
+        if (!sources?.size) {
+            return;
+        }
+
+        return dispatch({
+            type: PARTICIPANT_SOURCES_UPDATED,
+            participant: {
+                id,
+                sources
+            }
+        });
+    };
+}
+
+/**
  * Updates the features of a remote participant.
  *
  * @param {JitsiParticipant} jitsiParticipant - The ID of the participant.
  * @returns {{
 *     type: PARTICIPANT_UPDATED,
-*     participant: Participant
+*     participant: IParticipant
 * }}
 */
 export function updateRemoteParticipantFeatures(jitsiParticipant: any) {
-    return (dispatch: Dispatch, getState: Function) => {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         if (!jitsiParticipant) {
             return;
         }
@@ -381,8 +375,11 @@ export function hiddenParticipantLeft(id: string) {
  * with the participant identified by the specified {@code id}. Only the local
  * participant is allowed to not specify an associated {@code JitsiConference}
  * instance.
- * @param {boolean} isReplaced - Whether the participant is to be replaced in the meeting.
- * @param {boolean} isVirtualScreenshareParticipant - Whether the participant is a virtual screen share participant.
+ * @param {Object} participantLeftProps - Other participant properties.
+ * @typedef {Object} participantLeftProps
+ * @param {FakeParticipant|undefined} participantLeftProps.fakeParticipant - The type of fake participant.
+ * @param {boolean} participantLeftProps.isReplaced - Whether the participant is to be replaced in the meeting.
+ *
  * @returns {{
  *     type: PARTICIPANT_LEFT,
  *     participant: {
@@ -391,15 +388,16 @@ export function hiddenParticipantLeft(id: string) {
  *     }
  * }}
  */
-export function participantLeft(id: string, conference: any,
-        isReplaced?: boolean, isVirtualScreenshareParticipant?: boolean) {
+export function participantLeft(id: string, conference?: IJitsiConference, participantLeftProps: {
+    fakeParticipant?: string; isReplaced?: boolean;
+} = {}) {
     return {
         type: PARTICIPANT_LEFT,
         participant: {
             conference,
+            fakeParticipant: participantLeftProps.fakeParticipant,
             id,
-            isReplaced,
-            isVirtualScreenshareParticipant
+            isReplaced: participantLeftProps.isReplaced
         }
     };
 }
@@ -466,16 +464,16 @@ export function screenshareParticipantDisplayNameChanged(id: string, name: strin
 /**
  * Action to signal that some of participant properties has been changed.
  *
- * @param {Participant} participant={} - Information about participant. To
+ * @param {IParticipant} participant={} - Information about participant. To
  * identify the participant the object should contain either property id with
  * value the id of the participant or property local with value true (if the
  * local participant hasn't joined the conference yet).
  * @returns {{
  *     type: PARTICIPANT_UPDATED,
- *     participant: Participant
+ *     participant: IParticipant
  * }}
  */
-export function participantUpdated(participant: Participant = { id: '' }) {
+export function participantUpdated(participant: IParticipant = { id: '' }) {
     const participantToUpdate = {
         ...participant
     };
@@ -498,7 +496,7 @@ export function participantUpdated(participant: Participant = { id: '' }) {
  * @returns {Promise}
  */
 export function participantMutedUs(participant: any, track: any) {
-    return (dispatch: Dispatch, getState: Function) => {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         if (!participant) {
             return;
         }
@@ -517,21 +515,21 @@ export function participantMutedUs(participant: any, track: any) {
 /**
  * Action to create a virtual screenshare participant.
  *
- * @param {(string)} sourceName - JitsiTrack instance.
- * @param {(boolean)} local - JitsiTrack instance.
+ * @param {(string)} sourceName - The source name of the JitsiTrack instance.
+ * @param {(boolean)} local - Whether it's a local or remote participant.
+ * @param {JitsiConference} conference - The conference instance for which the participant is to be created.
  * @returns {Function}
  */
-export function createVirtualScreenshareParticipant(sourceName: string, local: boolean) {
-    return (dispatch: Dispatch<any>, getState: Function) => {
+export function createVirtualScreenshareParticipant(sourceName: string, local: boolean, conference?: IJitsiConference) {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
         const ownerId = getVirtualScreenshareParticipantOwnerId(sourceName);
         const ownerName = getParticipantDisplayName(state, ownerId);
 
         dispatch(participantJoined({
-            conference: state['features/base/conference'].conference,
+            conference,
+            fakeParticipant: local ? FakeParticipant.LocalScreenShare : FakeParticipant.RemoteScreenShare,
             id: sourceName,
-            isVirtualScreenshareParticipant: true,
-            isLocalScreenShare: local,
             name: ownerName
         }));
     };
@@ -545,7 +543,7 @@ export function createVirtualScreenshareParticipant(sourceName: string, local: b
  * @returns {Promise}
  */
 export function participantKicked(kicker: any, kicked: any) {
-    return (dispatch: Dispatch<any>, getState: Function) => {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
 
         dispatch({
             type: PARTICIPANT_KICKED,
@@ -553,7 +551,7 @@ export function participantKicked(kicker: any, kicked: any) {
             kicker: kicker?.getId()
         });
 
-        if (kicked.isReplaced && kicked.isReplaced()) {
+        if (kicked.isReplaced?.()) {
             return;
         }
 
@@ -581,7 +579,7 @@ export function participantKicked(kicker: any, kicked: any) {
  *     }
  * }}
  */
-export function pinParticipant(id: string) {
+export function pinParticipant(id?: string | null) {
     return {
         type: PIN_PARTICIPANT,
         participant: {
@@ -633,6 +631,19 @@ export function raiseHand(enabled: boolean) {
 }
 
 /**
+ * Clear the raise hand queue.
+ *
+ * @returns {{
+*     type: RAISE_HAND_CLEAR
+* }}
+*/
+export function raiseHandClear() {
+    return {
+        type: RAISE_HAND_CLEAR
+    };
+}
+
+/**
  * Update raise hand queue of participants.
  *
  * @param {Object} participant - Participant that updated raised hand.
@@ -641,7 +652,7 @@ export function raiseHand(enabled: boolean) {
  *      participant: Object
  * }}
  */
-export function raiseHandUpdateQueue(participant: Participant) {
+export function raiseHandUpdateQueue(participant: IParticipant) {
     return {
         type: RAISE_HAND_UPDATED,
         participant
@@ -685,7 +696,7 @@ export function overwriteParticipantName(id: string, name: string) {
  * @param {Array<Object>} participantList - The list of participants to overwrite.
  * @returns {Object}
  */
-export function overwriteParticipantsNames(participantList: Participant[]) {
+export function overwriteParticipantsNames(participantList: IParticipant[]) {
     return {
         type: OVERWRITE_PARTICIPANTS_NAMES,
         participantList
@@ -702,7 +713,7 @@ export function overwriteParticipantsNames(participantList: Participant[]) {
  *     recording: boolean
  * }}
  */
-export function updateLocalRecordingStatus(recording: boolean, onlySelf: boolean) {
+export function updateLocalRecordingStatus(recording: boolean, onlySelf?: boolean) {
     return {
         type: SET_LOCAL_PARTICIPANT_RECORDING_STATUS,
         recording,

@@ -146,16 +146,18 @@ export interface IDynamicBrandingState {
     avatarBackgrounds: string[];
     backgroundColor: string;
     backgroundImageUrl: string;
+    brandedIcons?: Record<string, string>;
     customizationFailed: boolean;
     customizationReady: boolean;
     defaultBranding: boolean;
     didPageUrl: string;
     inviteDomain: string;
-    labels: Object|null;
+    labels: Object | null;
     logoClickUrl: string;
     logoImageUrl: string;
     muiBrandedTheme?: boolean;
     premeetingBackground: string;
+    showGiphyIntegration?: boolean;
     useDynamicBrandingData: boolean;
     virtualBackgrounds: Array<Image>;
 }
@@ -163,13 +165,14 @@ export interface IDynamicBrandingState {
 /**
  * Reduces redux actions for the purposes of the feature {@code dynamic-branding}.
  */
-ReducerRegistry.register(STORE_NAME, (state: IDynamicBrandingState = DEFAULT_STATE, action) => {
+ReducerRegistry.register<IDynamicBrandingState>(STORE_NAME, (state = DEFAULT_STATE, action): IDynamicBrandingState => {
     switch (action.type) {
     case SET_DYNAMIC_BRANDING_DATA: {
         const {
             avatarBackgrounds,
             backgroundColor,
             backgroundImageUrl,
+            brandedIcons,
             defaultBranding,
             didPageUrl,
             inviteDomain,
@@ -178,6 +181,7 @@ ReducerRegistry.register(STORE_NAME, (state: IDynamicBrandingState = DEFAULT_STA
             logoImageUrl,
             muiBrandedTheme,
             premeetingBackground,
+            showGiphyIntegration,
             virtualBackgrounds
         } = action.value;
 
@@ -185,6 +189,7 @@ ReducerRegistry.register(STORE_NAME, (state: IDynamicBrandingState = DEFAULT_STA
             avatarBackgrounds,
             backgroundColor,
             backgroundImageUrl,
+            brandedIcons,
             defaultBranding,
             didPageUrl,
             inviteDomain,
@@ -193,6 +198,7 @@ ReducerRegistry.register(STORE_NAME, (state: IDynamicBrandingState = DEFAULT_STA
             logoImageUrl,
             muiBrandedTheme,
             premeetingBackground,
+            showGiphyIntegration,
             customizationFailed: false,
             customizationReady: true,
             useDynamicBrandingData: true,
@@ -224,11 +230,11 @@ ReducerRegistry.register(STORE_NAME, (state: IDynamicBrandingState = DEFAULT_STA
  * Transforms the branding images into an array of Images objects ready
  * to be used as virtual backgrounds.
  *
- * @param {Array<string>} images -
+ * @param {Array<string>} images - The branding images.
  * @private
  * @returns {{Props}}
  */
-function formatImages(images: Array<string> | Array<{src: string; tooltip?: string}>): Array<Image> {
+function formatImages(images: Array<string> | Array<{ src: string; tooltip?: string; }>): Array<Image> {
     return images.map((img, i) => {
         let src;
         let tooltip;

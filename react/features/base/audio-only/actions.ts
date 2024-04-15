@@ -1,32 +1,24 @@
-/* eslint-disable lines-around-comment */
-import type { Dispatch } from 'redux';
-
-// @ts-ignore
+// @ts-expect-error
 import UIEvents from '../../../../service/UI/UIEvents';
-// @ts-ignore
-import { createAudioOnlyChangedEvent, sendAnalytics } from '../../analytics';
+import { createAudioOnlyChangedEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { IStore } from '../../app/types';
 
 import { SET_AUDIO_ONLY } from './actionTypes';
 import logger from './logger';
 
 
-declare let APP: any;
-
 /**
  * Sets the audio-only flag for the current JitsiConference.
  *
- * @param {boolean} audioOnly - True if the conference should be audio only;
- * false, otherwise.
- * @param {boolean} ensureVideoTrack - Define if conference should ensure
- * to create a video track.
+ * @param {boolean} audioOnly - True if the conference should be audio only; false, otherwise.
  * @returns {{
  *     type: SET_AUDIO_ONLY,
- *     audioOnly: boolean,
- *     ensureVideoTrack: boolean
+ *     audioOnly: boolean
  * }}
  */
-export function setAudioOnly(audioOnly: boolean, ensureVideoTrack = false) {
-    return (dispatch: Dispatch<any>, getState: Function) => {
+export function setAudioOnly(audioOnly: boolean) {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const { enabled: oldValue } = getState()['features/base/audio-only'];
 
         if (oldValue !== audioOnly) {
@@ -35,8 +27,7 @@ export function setAudioOnly(audioOnly: boolean, ensureVideoTrack = false) {
 
             dispatch({
                 type: SET_AUDIO_ONLY,
-                audioOnly,
-                ensureVideoTrack
+                audioOnly
             });
 
             if (typeof APP !== 'undefined') {
@@ -54,9 +45,9 @@ export function setAudioOnly(audioOnly: boolean, ensureVideoTrack = false) {
  * @returns {Function}
  */
 export function toggleAudioOnly() {
-    return (dispatch: Dispatch<any>, getState: Function) => {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const { enabled } = getState()['features/base/audio-only'];
 
-        return dispatch(setAudioOnly(!enabled, true));
+        return dispatch(setAudioOnly(!enabled));
     };
 }

@@ -57,6 +57,7 @@
         },
         "noMessagesMessage": "Kirjavahetust pole veel alustatud. Alusta kirjavahetust siin!",
         "privateNotice": "Privaatsõnum kasutajale {{recipient}}",
+        "sendButton": "Saada",
         "title": "Kõne",
         "titleWithPolls": "Kõne",
         "you": "you"
@@ -90,7 +91,6 @@
         "bitrate": "Andmeedastuskiirus:",
         "bridgeCount": "Serverite arv: ",
         "connectedTo": "Ühendatud:",
-        "e2e_rtt": "E2E RTT:",
         "framerate": "Ekraani eraldusvõime:",
         "less": "Näita vähem",
         "localaddress": "Lokaalne aadress:",
@@ -395,6 +395,7 @@
         "signedInAs": "Oled sisse logitud kasutajana:",
         "start": "Alusta otseülekannet.",
         "streamIdHelp": "Mis see on?",
+        "title": "Otseülekanne",
         "unavailableTitle": "Otseülekanne pole kättesaadav."
     },
     "localRecording": {
@@ -466,6 +467,11 @@
     },
     "passwordDigitsOnly": "Kuni {{number}} tähemärki",
     "passwordSetRemotely": "määratud teise kasutaja poolt",
+    "polls": {
+        "errors": {
+            "notUniqueOption": "Valikud peavad olema ainulaadsed"
+        }
+    },
     "poweredby": "teieni toodud",
     "presenceStatus": {
         "busy": "Hõivatud",
@@ -512,6 +518,7 @@
         "serviceName": "Salvestamise teenus",
         "signIn": "Logi sisse",
         "signOut": "Logi välja",
+        "title": "Salvetamine",
         "unavailable": "Oih! {{serviceName}} ei ole hetkel kättesaadav! Proovi hiljem uuesti.",
         "unavailableTitle": "Salvestamine ei ole võimalik."
     },
@@ -569,6 +576,8 @@
         "hours": "{{count}}t",
         "minutes": "{{count}}m",
         "name": "Nimi",
+        "search": "Otsi",
+        "searchHint": "Otsige osalejaid",
         "seconds": "{{count}}s",
         "speakerStats": "Kõneleja andmed",
         "speakerTime": "Kõnelemise aeg"

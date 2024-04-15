@@ -73,6 +73,7 @@
         },
         "noMessagesMessage": "Bileran oraindik mezurik ez dago. Hasi elkarrizketa hemen!",
         "privateNotice": "Mezu pribatua {{recipient}}(e)ri",
+        "sendButton": "Bidali",
         "smileysPanel": "Emoji panela",
         "title": "Txata",
         "titleWithPolls": "Txata",
@@ -110,7 +111,6 @@
         "bridgeCount": "Zerbitzari kopurua: ",
         "codecs": "Kodekak (A/B): ",
         "connectedTo": "Konektatua hona:",
-        "e2e_rtt": "E2E RTT:",
         "framerate": "Marko-abiadura:",
         "less": "Erakutsi gutxiago",
         "localaddress": "Helbide lokala:",
@@ -354,7 +354,7 @@
         "veryGood": "Oso ona"
     },
     "helpView": {
-        "header": "Laguntza gunea"
+        "title": "Laguntza gunea"
     },
     "incomingCall": {
         "answer": "Erantzun",
@@ -458,12 +458,11 @@
         "signedInAs": "Honela hasi duzu saioa:",
         "start": "Hasi zuzeneko transmisioa",
         "streamIdHelp": "Zer da hau?",
+        "title": "Zuzeneko Erreprodukzioa",
         "unavailableTitle": "Zuzeneko transmisioa ez dago erabilgarri",
         "youtubeTerms": "YouTuberen erabilpen baldintzak"
     },
     "lobby": {
-        "admit": "Onartu",
-        "admitAll": "Onartu guztiak",
         "allow": "Baimendu",
         "backToKnockModeButton": "Ez du pasahitza erabili, baina sartzea eskatu du",
         "dialogTitle": "Itxaron-gela modua",
@@ -493,7 +492,7 @@
         "notificationTitle": "Itxaron-gela",
         "passwordField": "Idatzi bileraren pasahitza",
         "passwordJoinButton": "Sartu",
-        "reject": "Baztertu",
+        "title": "Itxaron-gela",
         "toggleLabel": "Itxaron-gela aktibatu"
     },
     "localRecording": {
@@ -574,8 +573,11 @@
     },
     "participantsPane": {
         "actions": {
+            "admit": "Onartu",
+            "admitAll": "Onartu guztiak",
             "invite": "Gonbidatu norbait",
             "muteAll": "Ixilarazi guztiak",
+            "reject": "Baztertu",
             "stopVideo": "Gelditu bideoa"
         },
         "close": "Itxi",
@@ -586,6 +588,11 @@
     },
     "passwordDigitsOnly": "{{number}} digitu arte",
     "passwordSetRemotely": "beste parte-hartzaile batek ezarrita",
+    "polls": {
+        "errors": {
+            "notUniqueOption": "Aukerak bakarrak izan behar dira"
+        }
+    },
     "poweredby": "garatzailea:",
     "prejoin": {
         "audioAndVideoError": "Errorea audio eta bideoan:",
@@ -694,6 +701,7 @@
         "serviceName": "Grabazio-zerbitzua",
         "signIn": "Sartu",
         "signOut": "Itxi saioa",
+        "title": "Grabatzen",
         "unavailable": "Atx! {{serviceName}} ez dago eskuragarri. Arazoa konpontzeko lanean gabiltza. Saiatu berriz beranduago.",
         "unavailableTitle": "Grabazioa ez dago eskuragarri"
     },
@@ -763,6 +771,8 @@
         "hours": "{{count}}h",
         "minutes": "{{count}}m",
         "name": "Izena",
+        "search": "Bilatu",
+        "searchHint": "Bilatu parte-hartzaileak",
         "seconds": "{{count}}s",
         "speakerStats": "Hizlariaren estatistikak",
         "speakerTime": "Hizlariaren denbora"

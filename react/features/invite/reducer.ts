@@ -8,6 +8,7 @@ import {
     UPDATE_DIAL_IN_NUMBERS_SUCCESS
 } from './actionTypes';
 import logger from './logger';
+import { IInvitee } from './types';
 
 const DEFAULT_STATE = {
     /**
@@ -24,20 +25,26 @@ const DEFAULT_STATE = {
 
 export interface IInviteState {
     calleeInfoVisible?: boolean;
-    conferenceID?: string;
-    error?: Error;
-    initialCalleeInfo?: Object;
-    numbers?: string;
+    conferenceID?: string | number;
+    error?: {
+        status: number;
+    };
+    initialCalleeInfo?: {
+        id: string;
+        name: string;
+        status: string;
+    };
+    numbers?: string[];
     numbersEnabled: boolean;
     numbersFetched: boolean;
     pendingInviteRequests: Array<{
         callback: Function;
-        invitees: Array<Object>;
+        invitees: IInvitee[];
     }>;
     sipUri?: string;
 }
 
-ReducerRegistry.register('features/invite', (state: IInviteState = DEFAULT_STATE, action) => {
+ReducerRegistry.register<IInviteState>('features/invite', (state = DEFAULT_STATE, action): IInviteState => {
     switch (action.type) {
     case ADD_PENDING_INVITE_REQUEST:
         return {
@@ -72,6 +79,7 @@ ReducerRegistry.register('features/invite', (state: IInviteState = DEFAULT_STATE
             return {
                 ...state,
                 conferenceID: action.conferenceID,
+                error: undefined,
                 numbers: action.dialInNumbers,
                 sipUri: action.sipUri,
                 numbersEnabled: true,
@@ -87,6 +95,7 @@ ReducerRegistry.register('features/invite', (state: IInviteState = DEFAULT_STATE
         return {
             ...state,
             conferenceID: action.conferenceID,
+            error: undefined,
             numbers: action.dialInNumbers,
             numbersEnabled,
             numbersFetched: true

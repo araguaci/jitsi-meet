@@ -1,7 +1,14 @@
+import { sanitizeUrl as _sanitizeUrl } from '@braintree/sanitize-url';
+
 import { parseURLParams } from './parseURLParams';
-// eslint-disable-next-line lines-around-comment
-// @ts-ignore
 import { normalizeNFKC } from './strings';
+
+/**
+ * Http status codes.
+ */
+export enum StatusCode {
+    PaymentRequired = 402
+}
 
 /**
  * The app linking scheme.
@@ -107,7 +114,7 @@ function _fixURIStringScheme(uri: string) {
  * @param {string?} path - The path to convert.
  * @returns {string?}
  */
-export function getBackendSafePath(path?: string): string|undefined {
+export function getBackendSafePath(path?: string): string | undefined {
     if (!path) {
         return path;
     }
@@ -124,7 +131,7 @@ export function getBackendSafePath(path?: string): string|undefined {
  * @param {string?} room - The room name to convert.
  * @returns {string?}
  */
-export function getBackendSafeRoomName(room?: string): string|undefined {
+export function getBackendSafeRoomName(room?: string): string | undefined {
     if (!room) {
         return room;
     }
@@ -139,7 +146,7 @@ export function getBackendSafeRoomName(room?: string): string|undefined {
     } catch (e) {
         // This can happen though if we get an unencoded string and it contains
         // some characters that look like an encoded entity, but it's not.
-        // But in this case we're fine goin on...
+        // But in this case we're fine going on...
     }
 
     // Normalize the character set.
@@ -168,7 +175,7 @@ export function getBackendSafeRoomName(room?: string): string|undefined {
  * @returns {string} - The (Web application) context root defined by the
  * specified {@code location} (URI).
  */
-export function getLocationContextRoot({ pathname }: { pathname: string }) {
+export function getLocationContextRoot({ pathname }: { pathname: string; }) {
     const contextRootEndIndex = pathname.lastIndexOf('/');
 
     return (
@@ -221,7 +228,7 @@ function _objectToURLParamsArray(obj = {}) {
 export function parseStandardURIString(str: string) {
     /* eslint-disable no-param-reassign */
 
-    const obj: {[key: string]: any} = {
+    const obj: { [key: string]: any; } = {
         toString: _standardURIToString
     };
 
@@ -258,7 +265,6 @@ export function parseStandardURIString(str: string) {
             authority = authority.substring(userinfoEndIndex + 1);
         }
 
-        // @ts-ignore
         obj.host = authority;
 
         // port
@@ -277,7 +283,7 @@ export function parseStandardURIString(str: string) {
     regex = new RegExp(`^${_URI_PATH_PATTERN}`, 'gi');
     match = regex.exec(str);
 
-    let pathname: string|undefined;
+    let pathname: string | undefined;
 
     if (match) {
         pathname = match[1];
@@ -330,7 +336,7 @@ export function parseStandardURIString(str: string) {
  *     search: string
  * }}
  */
-export function parseURIString(uri?: string) {
+export function parseURIString(uri?: string): any {
     if (typeof uri !== 'string') {
         return undefined;
     }
@@ -375,7 +381,7 @@ export function parseURIString(uri?: string) {
  */
 function _standardURIToString(thiz?: Object) {
     // @ts-ignore
-    // eslint-disable-next-line no-invalid-this
+    // eslint-disable-next-line @typescript-eslint/no-invalid-this
     const { hash, host, pathname, protocol, search } = thiz || this;
     let str = '';
 
@@ -421,7 +427,7 @@ export function safeDecodeURIComponent(text: string) {
  * @returns {string} - A {@code String} representation of the specified
  * {@code obj} which is supposed to represent a URL.
  */
-export function toURLString(obj?: (Object | string)): string|undefined|null {
+export function toURLString(obj?: (Object | string)) {
     let str;
 
     switch (typeof obj) {
@@ -452,7 +458,7 @@ export function toURLString(obj?: (Object | string)): string|undefined|null {
  * @returns {string} - A {@code String} representation of the specified
  * {@code Object}.
  */
-export function urlObjectToString(o: {[key: string]: any}): string|undefined {
+export function urlObjectToString(o: { [key: string]: any; }): string | undefined {
     // First normalize the given url. It come as o.url or split into o.serverURL
     // and o.room.
     let tmp;
@@ -469,7 +475,7 @@ export function urlObjectToString(o: {[key: string]: any}): string|undefined {
 
     // protocol
     if (!url.protocol) {
-        let protocol: string|undefined = o.protocol || o.scheme;
+        let protocol: string | undefined = o.protocol || o.scheme;
 
         if (protocol) {
             // Protocol is supposed to be the scheme and the final ':'. Anyway,
@@ -487,7 +493,7 @@ export function urlObjectToString(o: {[key: string]: any}): string|undefined {
         //
         // It may be host/hostname and pathname with the latter denoting the
         // tenant.
-        const domain: string|undefined = o.domain || o.host || o.hostname;
+        const domain: string | undefined = o.domain || o.host || o.hostname;
 
         if (domain) {
             const { host, hostname, pathname: contextRoot, port }
@@ -555,7 +561,7 @@ export function urlObjectToString(o: {[key: string]: any}): string|undefined {
 
     let { hash } = url;
 
-    for (const urlPrefix of [ 'config', 'interfaceConfig', 'devices', 'userInfo', 'appData' ]) {
+    for (const urlPrefix of [ 'config', 'iceServers', 'interfaceConfig', 'devices', 'userInfo', 'appData' ]) {
         const urlParamsArray
             = _objectToURLParamsArray(
                 o[`${urlPrefix}Overwrite`]
@@ -626,4 +632,52 @@ export function appendURLParam(url: string, name: string, value: string) {
     newUrl.searchParams.append(name, value);
 
     return newUrl.toString();
+}
+
+/**
+ * Adds new hash param to a url string.
+ * Checks whether to use '?' or '&' as a separator (checks for already existing params).
+ *
+ * @param {string} url - The url to modify.
+ * @param {string} name - The param name to add.
+ * @param {string} value - The value for the param.
+ *
+ * @returns {string} - The modified url.
+ */
+export function appendURLHashParam(url: string, name: string, value: string) {
+    const newUrl = new URL(url);
+    const dummyUrl = new URL('https://example.com');
+
+    // Copy current hash-parameters without the '#' as search-parameters.
+    dummyUrl.search = newUrl.hash.substring(1);
+
+    // Set or update value with the searchParams-API.
+    dummyUrl.searchParams.append(name, value);
+
+    // Write back as hash parameters.
+    newUrl.hash = dummyUrl.searchParams.toString();
+
+    return newUrl.toString();
+}
+
+/**
+ * Sanitizes the given URL so that it's safe to use. If it's unsafe, null is returned.
+ *
+ * @param {string|URL} url - The URL that needs to be sanitized.
+ *
+ * @returns {URL?} - The sanitized URL, or null otherwise.
+ */
+export function sanitizeUrl(url?: string | URL): URL | null {
+    if (!url) {
+        return null;
+    }
+
+    const urlStr = url.toString();
+    const result = _sanitizeUrl(urlStr);
+
+    if (result === 'about:blank') {
+        return null;
+    }
+
+    return new URL(result);
 }

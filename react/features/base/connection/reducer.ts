@@ -1,11 +1,8 @@
-/* eslint-disable import/order */
-
 import { SET_ROOM } from '../conference/actionTypes';
-
-// @ts-ignore
+import { SET_JWT } from '../jwt/actionTypes';
 import { JitsiConnectionErrors } from '../lib-jitsi-meet';
-import { assign, set } from '../redux/functions';
 import ReducerRegistry from '../redux/ReducerRegistry';
+import { assign, set } from '../redux/functions';
 
 import {
     CONNECTION_DISCONNECTED,
@@ -13,18 +10,25 @@ import {
     CONNECTION_FAILED,
     CONNECTION_WILL_CONNECT,
     SET_LOCATION_URL,
+    SET_PREFER_VISITOR,
     SHOW_CONNECTION_INFO
 } from './actionTypes';
-
-// @ts-ignore
-import { ConnectionFailedError } from './actions.native';
+import { ConnectionFailedError } from './types';
 
 export interface IConnectionState {
-    connecting?: Object;
-    connection?: Object;
+    connecting?: any;
+    connection?: {
+        addFeature: Function;
+        disconnect: Function;
+        getJid: () => string;
+        getLogs: () => Object;
+        initJitsiConference: Function;
+        removeFeature: Function;
+    };
     error?: ConnectionFailedError;
     locationURL?: URL;
     passwordRequired?: Object;
+    preferVisitor?: boolean;
     showConnectionInfo?: boolean;
     timeEstablished?: number;
 }
@@ -32,9 +36,9 @@ export interface IConnectionState {
 /**
  * Reduces the Redux actions of the feature base/connection.
  */
-ReducerRegistry.register(
+ReducerRegistry.register<IConnectionState>(
     'features/base/connection',
-    (state: IConnectionState = {}, action: any) => {
+    (state = {}, action): IConnectionState => {
         switch (action.type) {
         case CONNECTION_DISCONNECTED:
             return _connectionDisconnected(state, action);
@@ -48,8 +52,16 @@ ReducerRegistry.register(
         case CONNECTION_WILL_CONNECT:
             return _connectionWillConnect(state, action);
 
+        case SET_JWT:
+            return _setJWT(state, action);
+
         case SET_LOCATION_URL:
             return _setLocationURL(state, action);
+
+        case SET_PREFER_VISITOR:
+            return assign(state, {
+                preferVisitor: action.preferVisitor
+            });
 
         case SET_ROOM:
             return _setRoom(state);
@@ -73,7 +85,7 @@ ReducerRegistry.register(
  */
 function _connectionDisconnected(
         state: IConnectionState,
-        { connection }: { connection: Object }) {
+        { connection }: { connection: Object; }) {
     const connection_ = _getCurrentConnection(state);
 
     if (connection_ !== connection) {
@@ -83,6 +95,7 @@ function _connectionDisconnected(
     return assign(state, {
         connecting: undefined,
         connection: undefined,
+        preferVisitor: undefined,
         timeEstablished: undefined
     });
 }
@@ -100,8 +113,8 @@ function _connectionDisconnected(
 function _connectionEstablished(
         state: IConnectionState,
         { connection, timeEstablished }: {
-            connection: Object,
-            timeEstablished: number
+            connection: any;
+            timeEstablished: number;
         }) {
     return assign(state, {
         connecting: undefined,
@@ -125,8 +138,8 @@ function _connectionEstablished(
 function _connectionFailed(
         state: IConnectionState,
         { connection, error }: {
-            connection: Object,
-            error: ConnectionFailedError
+            connection: Object;
+            error: ConnectionFailedError;
         }) {
     const connection_ = _getCurrentConnection(state);
 
@@ -140,7 +153,8 @@ function _connectionFailed(
         error,
         passwordRequired:
             error.name === JitsiConnectionErrors.PASSWORD_REQUIRED
-                ? connection : undefined
+                ? connection : undefined,
+        preferVisitor: undefined
     });
 }
 
@@ -156,7 +170,7 @@ function _connectionFailed(
  */
 function _connectionWillConnect(
         state: IConnectionState,
-        { connection }: { connection: Object }) {
+        { connection }: { connection: Object; }) {
     return assign(state, {
         connecting: connection,
 
@@ -179,8 +193,24 @@ function _connectionWillConnect(
  * @returns {JitsiConnection} - The current {@code JitsiConnection} if any.
  * @private
  */
-function _getCurrentConnection(baseConnectionState: IConnectionState): IConnectionState|undefined {
+function _getCurrentConnection(baseConnectionState: IConnectionState): IConnectionState | undefined {
     return baseConnectionState.connection || baseConnectionState.connecting;
+}
+
+/**
+ * Reduces a specific redux action {@link SET_JWT} of the feature
+ * base/connection.
+ *
+ * @param {IConnectionState} state - The redux state of the feature base/connection.
+ * @param {Action} action - The Redux action SET_JWT to reduce.
+ * @private
+ * @returns {Object} The new state of the feature base/connection after the
+ * reduction of the specified action.
+ */
+function _setJWT(state: IConnectionState, { preferVisitor }: { preferVisitor: boolean; }) {
+    return assign(state, {
+        preferVisitor
+    });
 }
 
 /**
@@ -195,7 +225,7 @@ function _getCurrentConnection(baseConnectionState: IConnectionState): IConnecti
  */
 function _setLocationURL(
         state: IConnectionState,
-        { locationURL }: { locationURL?: URL }) {
+        { locationURL }: { locationURL?: URL; }) {
     return set(state, 'locationURL', locationURL);
 }
 
@@ -227,6 +257,6 @@ function _setRoom(state: IConnectionState) {
  */
 function _setShowConnectionInfo(
         state: IConnectionState,
-        { showConnectionInfo }: { showConnectionInfo: boolean }) {
+        { showConnectionInfo }: { showConnectionInfo: boolean; }) {
     return set(state, 'showConnectionInfo', showConnectionInfo);
 }

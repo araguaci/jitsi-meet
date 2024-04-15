@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error
 import { createRNNWasmModuleSync } from '@jitsi/rnnoise-wasm';
 
 import { leastCommonMultiple } from '../../base/util/math';
@@ -106,6 +106,12 @@ class NoiseSuppressorWorklet extends AudioWorkletProcessor {
         const inData = inputs[0][0];
         const outData = outputs[0][0];
 
+        // Exit out early if there is no input data (input node not connected/disconnected)
+        // as rest of worklet will crash otherwise
+        if (!inData) {
+            return true;
+        }
+
         // Append new raw PCM sample.
         this._circularBuffer.set(inData, this._inputBufferLength);
         this._inputBufferLength += inData.length;
@@ -127,7 +133,7 @@ class NoiseSuppressorWorklet extends AudioWorkletProcessor {
         }
 
         // Determine how much denoised audio is available, if the start index of denoised samples is smaller
-        // then _denoisedBufferLength that means a rollover occured.
+        // then _denoisedBufferLength that means a rollover occurred.
         let unsentDenoisedDataLength;
 
         if (this._denoisedBufferIndx > this._denoisedBufferLength) {
@@ -150,7 +156,7 @@ class NoiseSuppressorWorklet extends AudioWorkletProcessor {
             this._denoisedBufferIndx += outData.length;
         }
 
-        // When the end of the circular buffer has been reached, start from the beggining. By the time the index
+        // When the end of the circular buffer has been reached, start from the beginning. By the time the index
         // starts over, the data from the begging is stale (has already been processed) and can be safely
         // overwritten.
         if (this._denoisedBufferIndx === this._circularBufferLength) {

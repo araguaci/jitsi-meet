@@ -1,17 +1,15 @@
-/* eslint-disable lines-around-comment */
-// @ts-ignore
-import type { AudioElement } from '../media';
+import { AnyAction } from 'redux';
+
+import { AudioElement } from '../media/components/AbstractAudio';
 import ReducerRegistry from '../redux/ReducerRegistry';
 import { assign } from '../redux/functions';
 
 import {
-    _ADD_AUDIO_ELEMENT,
-    _REMOVE_AUDIO_ELEMENT,
     REGISTER_SOUND,
-    UNREGISTER_SOUND
+    UNREGISTER_SOUND,
+    _ADD_AUDIO_ELEMENT,
+    _REMOVE_AUDIO_ELEMENT
 } from './actionTypes';
-// @ts-ignore
-import logger from './logger';
 
 /**
  * The structure use by this reducer to describe a sound.
@@ -23,20 +21,22 @@ export type Sound = {
      * Becomes available once the sound resource gets loaded and the sound can
      * not be played until that happens.
      */
-    audioElement?: AudioElement,
+    audioElement?: AudioElement;
 
     /**
      * This field is container for all optional parameters related to the sound.
      */
-    options?: Object,
+    options?: {
+        loop: boolean;
+    };
 
     /**
      * This field describes the source of the audio resource to be played. It
      * can be either a path to the file or an object depending on the platform
      * (native vs web).
      */
-    src?: Object | string
-}
+    src?: Object | string;
+};
 
 /**
  * Initial/default state of the feature {@code base/sounds}. It is a {@code Map}
@@ -51,9 +51,9 @@ export type ISoundsState = Map<string, Sound>;
 /**
  * The base/sounds feature's reducer.
  */
-ReducerRegistry.register(
+ReducerRegistry.register<ISoundsState>(
     'features/base/sounds',
-    (state: ISoundsState = DEFAULT_STATE, action) => {
+    (state = DEFAULT_STATE, action): ISoundsState => {
         switch (action.type) {
         case _ADD_AUDIO_ELEMENT:
         case _REMOVE_AUDIO_ELEMENT:
@@ -79,7 +79,7 @@ ReducerRegistry.register(
  * @private
  * @returns {Map<string, Sound>}
  */
-function _addOrRemoveAudioElement(state: ISoundsState, action: any) {
+function _addOrRemoveAudioElement(state: ISoundsState, action: AnyAction) {
     const isAddAction = action.type === _ADD_AUDIO_ELEMENT;
     const nextState = new Map(state);
     const { soundId } = action;
@@ -98,8 +98,6 @@ function _addOrRemoveAudioElement(state: ISoundsState, action: any) {
                     audioElement: undefined
                 }));
         }
-    } else {
-        logger.warn(`${action.type}: no sound for id: ${soundId}`);
     }
 
     return nextState;
@@ -116,7 +114,7 @@ function _addOrRemoveAudioElement(state: ISoundsState, action: any) {
  * @private
  * @returns {Map<string, Sound>}
  */
-function _registerSound(state: ISoundsState, action: any) {
+function _registerSound(state: ISoundsState, action: AnyAction) {
     const nextState = new Map(state);
 
     nextState.set(action.soundId, {
@@ -137,7 +135,7 @@ function _registerSound(state: ISoundsState, action: any) {
  * @private
  * @returns {Map<string, Sound>}
  */
-function _unregisterSound(state: ISoundsState, action: any) {
+function _unregisterSound(state: ISoundsState, action: AnyAction) {
     const nextState = new Map(state);
 
     nextState.delete(action.soundId);
