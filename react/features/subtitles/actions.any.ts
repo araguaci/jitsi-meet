@@ -1,11 +1,15 @@
 import { DEFAULT_LANGUAGE } from '../base/i18n/i18next';
 
 import {
+    REMOVE_CACHED_TRANSCRIPT_MESSAGE,
     REMOVE_TRANSCRIPT_MESSAGE,
     SET_REQUESTING_SUBTITLES,
+    STORE_SUBTITLE,
     TOGGLE_REQUESTING_SUBTITLES,
-    UPDATE_TRANSCRIPT_MESSAGE
+    UPDATE_TRANSCRIPT_MESSAGE,
+    SET_SUBTITLES_ERROR
 } from './actionTypes';
+import { ISubtitle } from './types';
 
 /**
  * Signals that a transcript has to be removed from the state.
@@ -19,6 +23,22 @@ import {
 export function removeTranscriptMessage(transcriptMessageID: string) {
     return {
         type: REMOVE_TRANSCRIPT_MESSAGE,
+        transcriptMessageID
+    };
+}
+
+/**
+ * Signals that a cached transcript has to be removed from the state.
+ *
+ * @param {string} transcriptMessageID - The message_id to be removed.
+ * @returns {{
+*      type: REMOVE_CACHED_TRANSCRIPT_MESSAGE,
+*      transcriptMessageID: string,
+* }}
+*/
+export function removeCachedTranscriptMessage(transcriptMessageID: string) {
+    return {
+        type: REMOVE_CACHED_TRANSCRIPT_MESSAGE,
         transcriptMessageID
     };
 }
@@ -79,5 +99,37 @@ export function setRequestingSubtitles(
         displaySubtitles,
         enabled,
         language
+    };
+}
+
+/**
+ * Stores a received subtitle in the history.
+ *
+ * @param {ISubtitle} subtitle - The subtitle to store.
+ * @returns {{
+ *     type: STORE_SUBTITLE,
+ *     subtitle: ISubtitle
+ * }}
+ */
+export function storeSubtitle(subtitle: ISubtitle) {
+    return {
+        type: STORE_SUBTITLE,
+        subtitle
+    };
+}
+
+/**
+ * Signals that an error occurred while starting subtitles.
+ *
+ * @param {boolean} hasError - Whether an error occurred or not.
+ * @returns {{
+ *    type: SET_SUBTITLES_ERROR,
+ *    hasError: boolean
+ * }}
+ */
+export function setSubtitlesError(hasError: boolean) {
+    return {
+        type: SET_SUBTITLES_ERROR,
+        hasError
     };
 }
