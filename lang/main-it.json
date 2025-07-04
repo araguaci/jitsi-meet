@@ -109,6 +109,7 @@
         }
     },
     "chat": {
+        "disabled": "L'invio di messaggi in chat è disabilitato.",
         "enter": "Entra nella conversazione",
         "error": "Errore: il tuo messaggio non è stato inviato. Motivo: {{error}}",
         "fieldPlaceHolder": "Scrivi qui il tuo messaggio",
@@ -124,7 +125,8 @@
             "title": "Inserisci un nickname per usare la chat",
             "titleWithCC": "Inserisci un nickname per usare la chat e i sottotitoli",
             "titleWithPolls": "Inserisci un nickname per usare la chat e i sondaggi",
-            "titleWithPollsAndCC": "Inserisci un nickname per usare la chat, i sondaggi e i sottotitoli"
+            "titleWithPollsAndCC": "Inserisci un nickname per usare la chat, i sondaggi e i sottotitoli",
+            "titleWithPollsAndCCAndFileSharing": "Inserisci un nickname per usare la chat, i sondaggi, i sottotitoli e i file"
         },
         "noMessagesMessage": "Non ci sono ancora messaggi nella riunione. Inizia una conversazione, qui!",
         "privateNotice": "Messaggio privato a {{recipient}}",
@@ -134,12 +136,14 @@
         "tabs": {
             "chat": "Chat",
             "closedCaptions": "Sottotitoli",
+            "fileSharing": "File",
             "polls": "Sondaggi"
         },
         "title": "Chat",
-        "titleWithCC": "Chat e sottotitoli",
-        "titleWithPolls": "Chat e sondaggi",
-        "titleWithPollsAndCC": "Chat, sondaggi e sottotitoli",
+        "titleWithCC": "Sottotitoli",
+        "titleWithFeatures": "Chat e",
+        "titleWithFileSharing": "File",
+        "titleWithPolls": "Sondaggi",
         "you": "tu"
     },
     "chromeExtensionBanner": {
@@ -539,6 +543,19 @@
         "veryBad": "Pessima",
         "veryGood": "Ottima"
     },
+    "fileSharing": {
+        "downloadFailedDescription": "Si prega di riprovare.",
+        "downloadFailedTitle": "Download non riuscito",
+        "downloadFile": "Download",
+        "dragAndDrop": "Trascina e rilascia i file qui o da qualsiasi altra parte nella schermata",
+        "fileAlreadyUploaded": "Questo file è già stato caricato nella riunione.",
+        "fileTooLargeDescription": "Assicurati che il file non superi {{ maxFileSize }}.",
+        "fileTooLargeTitle": "Il file selezionato è troppo grande",
+        "removeFile": "Rimuovi",
+        "uploadFailedDescription": "Si prega di riprovare.",
+        "uploadFailedTitle": "Caricamento non riuscito",
+        "uploadFile": "Condividi file"
+    },
     "filmstrip": {
         "accessibilityLabel": {
             "heading": "Miniatura video"
@@ -892,6 +909,7 @@
             "visitorInQueue": " ({{count}} in attesa)",
             "visitorRequests": " ({{count}} richiesta/e)",
             "visitors": "Spettatori {{count}}",
+            "visitorsList": "Spettatori ({{count}})",
             "waitingLobby": "({{count}}) in attesa"
         },
         "search": "Cerca partecipanti",
@@ -932,7 +950,7 @@
         },
         "results": {
             "changeVote": "Cambia voto",
-            "empty": "Non ci sono ancora sondaggi in questa riunione. Crea un sondaggio qui!",
+            "empty": "Non ci sono ancora sondaggi in questa riunione.",
             "hideDetailedResults": "Nascondi dettagli",
             "showDetailedResults": "Mostra dettagli",
             "vote": "Voti"

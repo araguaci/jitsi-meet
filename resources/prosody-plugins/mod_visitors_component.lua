@@ -75,7 +75,7 @@ end
 local function request_promotion_received(room, from_jid, from_vnode, nick, time, user_id, group_id, force_promote_requested)
     -- if visitors is enabled for the room
     if visitors_promotion_map[room.jid] then
-        local force_promote = auto_allow_promotion;
+        local force_promote = auto_allow_promotion or get_visitors_room_metadata(room).autoPromote;
         if not force_promote and force_promote_requested == 'true' then
             -- Let's do the force_promote checks if requested
             -- if it is vpaas meeting we trust the moderator computation from visitor node (value of force_promote_requested)
@@ -472,11 +472,14 @@ process_host_module(muc_domain_prefix..'.'..muc_domain_base, function(host_modul
             join:tag('password', { xmlns = MUC_NS }):text(room:get_password());
         end
 
-        -- we skip any checks when auto-allow is enabled
-        if auto_allow_promotion
+        local is_live = get_visitors_room_metadata(room).live;
+
+        -- we skip any checks when auto-allow is enabled and room is live
+        if (auto_allow_promotion or get_visitors_room_metadata(room).autoPromote and (is_live or is_live == nil))
             or ignore_list:contains(jid.host(stanza.attr.from)) -- jibri or other domains to ignore
             or is_sip_jigasi(stanza)
-            or is_sip_jibri_join(stanza) then
+            or is_sip_jibri_join(stanza)
+            or table_find(room._data.mainMeetingParticipants, session.jitsi_meet_context_user and session.jitsi_meet_context_user.id) then
             return;
         end
 
@@ -514,6 +517,17 @@ process_host_module(muc_domain_prefix..'.'..muc_domain_base, function(host_modul
                         :tag('no-main-participants', { xmlns = 'jitsi:visitors' }));
                 return true;
             end
+        elseif is_live == false
+            and room._data.mainMeetingParticipants
+            and #room._data.mainMeetingParticipants > 0 then
+                -- This is non jaas room which is not live and has a list of participants
+                -- allowed to participate in the main room, but this participant is not one of them
+                session.log('warn',
+                    'Deny user join in the main not live meeting, not in the list of main participants');
+                session.send(st.error_reply(
+                    stanza, 'cancel', 'not-allowed', 'Tried to join the main (not live) room')
+                        :tag('not-live-room', { xmlns = 'jitsi:visitors' }));
+                return true;
         end
 
     end, 7); -- after muc_meeting_id, the logic for not joining before jicofo

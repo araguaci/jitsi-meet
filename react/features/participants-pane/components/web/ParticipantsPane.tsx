@@ -6,6 +6,7 @@ import { makeStyles } from 'tss-react/mui';
 import { IReduxState } from '../../../app/types';
 import participantsPaneTheme from '../../../base/components/themes/participantsPaneTheme.json';
 import { openDialog } from '../../../base/dialog/actions';
+import { isMobileBrowser } from '../../../base/environment/utils';
 import { IconCloseLarge, IconDotsHorizontal } from '../../../base/icons/svg';
 import { isLocalParticipantModerator } from '../../../base/participants/functions';
 import Button from '../../../base/ui/components/web/Button';
@@ -14,6 +15,7 @@ import { BUTTON_TYPES } from '../../../base/ui/constants.web';
 import { findAncestorByClass } from '../../../base/ui/functions.web';
 import { isAddBreakoutRoomButtonVisible } from '../../../breakout-rooms/functions';
 import MuteEveryoneDialog from '../../../video-menu/components/web/MuteEveryoneDialog';
+import { shouldDisplayCurrentVisitorsList } from '../../../visitors/functions';
 import { close } from '../../actions.web';
 import {
     getParticipantsPaneOpen,
@@ -23,11 +25,11 @@ import {
 import { AddBreakoutRoomButton } from '../breakout-rooms/components/web/AddBreakoutRoomButton';
 import { RoomList } from '../breakout-rooms/components/web/RoomList';
 
+import CurrentVisitorsList from './CurrentVisitorsList';
 import { FooterContextMenu } from './FooterContextMenu';
 import LobbyParticipants from './LobbyParticipants';
 import MeetingParticipants from './MeetingParticipants';
 import VisitorsList from './VisitorsList';
-import { isMobileBrowser } from '../../../base/environment/utils';
 
 /**
  * Interface representing the properties used for styles.
@@ -73,6 +75,8 @@ const useStyles = makeStyles<IStylesProps>()((theme, { isChatOpen }) => {
             overflowY: 'auto',
             position: 'relative',
             padding: `0 ${participantsPaneTheme.panePadding}px`,
+            display: 'flex',
+            flexDirection: 'column',
 
             '&::-webkit-scrollbar': {
                 display: 'none'
@@ -129,6 +133,7 @@ const ParticipantsPane = () => {
     const paneOpen = useSelector(getParticipantsPaneOpen);
     const isBreakoutRoomsSupported = useSelector((state: IReduxState) => state['features/base/conference'])
         .conference?.getBreakoutRooms()?.isSupported();
+    const showCurrentVisitorsList = useSelector(shouldDisplayCurrentVisitorsList);
     const showAddRoomButton = useSelector(isAddBreakoutRoomButtonVisible);
     const showFooter = useSelector(isLocalParticipantModerator);
     const showMuteAllButton = useSelector(isMuteAllVisible);
@@ -193,6 +198,7 @@ const ParticipantsPane = () => {
                     setSearchString = { setSearchString } />
                 {isBreakoutRoomsSupported && <RoomList searchString = { searchString } />}
                 {showAddRoomButton && <AddBreakoutRoomButton />}
+                {showCurrentVisitorsList && <CurrentVisitorsList searchString = { searchString } />}
             </div>
             {showFooter && (
                 <div className = { classes.footer }>

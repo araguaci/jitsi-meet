@@ -117,6 +117,11 @@ var config = {
 
         // Will replace ice candidates IPs with invalid ones in order to fail ice.
         // failICE: true,
+
+        // When running on Spot TV, this controls whether to show the recording consent dialog.
+        // If false (default), Spot instances will not show the recording consent dialog.
+        // If true, Spot instances will show the recording consent dialog like regular clients.
+        // showSpotConsentDialog: false,
     },
 
     // Disables moderator indicators.
@@ -127,6 +132,9 @@ var config = {
 
     // Disables the reactions moderation feature.
     // disableReactionsModeration: false,
+
+    // Disables the reactions in chat feature.
+    // disableReactionsInChat: false,
 
     // Disables polls feature.
     // disablePolls: false,
@@ -502,6 +510,15 @@ var config = {
     //     // Enables automatic request of subtitles when transcriber is present in the meeting, uses the default
     //     // language that is set
     //     autoCaptionOnTranscribe: false,
+    //
+    //     // Disables everything related to closed captions - the tab in the chat area, the button in the menu,
+    //     // subtitles on stage and the "Show subtitles on stage" checkbox in the settings.
+    //     // Note: Starting transcriptions from the recording dialog will still work.
+    //     disableClosedCaptions: false,
+
+    //     // Whether to invite jigasi when backend transcriptions are enabled (asyncTranscription is true in metadata).
+    //     // By default, we invite it.
+    //     inviteJigasiOnBackendTranscribing: true,
     // },
 
     // Misc
@@ -613,6 +630,7 @@ var config = {
     //     medium: 5000,
     //     long: 10000,
     //     extraLong: 60000,
+    //     sticky: 0,
     // },
 
     // // Options for the recording limit notification.
@@ -830,8 +848,7 @@ var config = {
     // some other values in config.js to be enabled. Also, the "profile" button will
     // not display for users with a JWT.
     // Notes:
-    // - it's impossible to choose which buttons go in the "More actions" menu
-    // - it's impossible to control the placement of buttons
+    // - it's possible to reorder the buttons in the maintoolbar by changing the order of the mainToolbarButtons
     // - 'desktop' controls the "Share your screen" button
     // - if `toolbarButtons` is undefined, we fallback to enabling all buttons on the UI
     // toolbarButtons: [
@@ -1261,9 +1278,6 @@ var config = {
     // disableDeepLinking: false,
 
     // The deeplinking config.
-    // For information about the properties of
-    // deeplinking.[ios/android].dynamicLink check:
-    // https://firebase.google.com/docs/dynamic-links/create-manually
     // deeplinking: {
     //
     //     // The desktop deeplinking config, disabled by default.
@@ -1292,13 +1306,6 @@ var config = {
     //         appScheme: 'org.jitsi.meet',
     //         // Custom URL for downloading ios mobile app.
     //         downloadLink: 'https://itunes.apple.com/us/app/jitsi-meet/id1165103905',
-    //         dynamicLink: {
-    //             apn: 'org.jitsi.meet',
-    //             appCode: 'w2atb',
-    //             customDomain: undefined,
-    //             ibi: 'com.atlassian.JitsiMeet.ios',
-    //             isi: '1165103905'
-    //         }
     //     },
 
     //     // The android deeplinking config.
@@ -1311,13 +1318,6 @@ var config = {
     //         // Android app package name.
     //         appPackage: 'org.jitsi.meet',
     //         fDroidUrl: 'https://f-droid.org/en/packages/org.jitsi.meet/',
-    //         dynamicLink: {
-    //             apn: 'org.jitsi.meet',
-    //             appCode: 'w2atb',
-    //             customDomain: undefined,
-    //             ibi: 'com.atlassian.JitsiMeet.ios',
-    //             isi: '1165103905'
-    //         }
     //     }
     // },
 
@@ -1365,18 +1365,11 @@ var config = {
     //     disableKick: true,
     //     // If set to true the 'Grant moderator' button will be disabled.
     //     disableGrantModerator: true,
-    //     // If set to true the 'Send private message' button will be disabled.
-    //     disablePrivateChat: true,
+    //     // If set to 'all' the 'Private chat' button will be disabled for all participants.
+    //     // If set to 'allow-moderator-chat' the 'Private chat' button will be available for chats with moderators.
+    //     disablePrivateChat: 'all' | 'allow-moderator-chat',
     // },
 
-    // Endpoint that enables support for salesforce integration with in-meeting resource linking
-    // This is required for:
-    // listing the most recent records - salesforceUrl/records/recents
-    // searching records - salesforceUrl/records?text=${text}
-    // retrieving record details - salesforceUrl/records/${id}?type=${type}
-    // and linking the meeting - salesforceUrl/sessions/${sessionId}/records/${id}
-    //
-    // salesforceUrl: 'https://api.example.com/',
 
     // If set to true all muting operations of remote participants will be disabled.
     // disableRemoteMute: true,
@@ -1401,6 +1394,13 @@ var config = {
         logoClickUrl: 'https://example-company.org',
         // The url used for the image used as logo
         logoImageUrl: 'https://example.com/logo-img.png',
+        // Endpoint that enables support for salesforce integration with in-meeting resource linking
+        // This is required for:
+        // listing the most recent records - salesforceUrl/records/recents
+        // searching records - salesforceUrl/records?text=${text}
+        // retrieving record details - salesforceUrl/records/${id}?type=${type}
+        // and linking the meeting - salesforceUrl/sessions/${sessionId}/records/${id}
+        // salesforceUrl: 'https://api.example.com/',
         // Overwrite for pool of background images for avatars
         avatarBackgrounds: ['url(https://example.com/avatar-background-1.png)', '#FFF'],
         // The lobby/prejoin screen background
@@ -1582,6 +1582,9 @@ var config = {
     // tokenAuthUrlAutoRedirect: false
     // An option to respect the context.tenant jwt field compared to the current tenant from the url
     // tokenRespectTenant: false,
+    // An option to get for user info (name, picture, email) in the token outside the user context.
+    // Can be used with Firebase tokens.
+    // tokenGetUserInfoOutOfContext: false,
 
     // You can put an array of values to target different entity types in the invite dialog.
     // Valid values are "phone", "room", "sip", "user", "videosipgw" and "email"
@@ -1781,6 +1784,13 @@ var config = {
     //     // The minimum number of participants that must be in the call for
     //     // the top panel layout to be used.
     //     minParticipantCountForTopPanel: 50,
+
+    //     // The width of the filmstrip on joining meeting. Can be resized afterwards.
+    //     initialWidth: 400,
+
+    //     // Whether the draggable resize bar of the filmstrip is always visible. Setting this to true will make
+    //     // the filmstrip always visible in case `disableResizable` is false.
+    //     alwaysShowResizeBar: true,
     // },
 
     // Tile view related config options.
@@ -1882,6 +1892,16 @@ var config = {
 
     // If true remove the tint foreground on focused user camera in filmstrip
     // disableCameraTintForeground: false,
+
+    // File sharign service.
+    // fileSharing: {
+    //     // The URL of the file sharing service API. See resources/file-sharing.yaml for more details.
+    //     apiUrl: 'https://example.com',
+    //     // Whether the file sharing service is enabled or not.
+    //     enabled: true,
+    //     // Maximum file size limit (-1 value disables any file size limit check)
+    //     maxFileSize: 50,
+    // },
 };
 
 // Set the default values for JaaS customers
